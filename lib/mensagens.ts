@@ -17,11 +17,30 @@ const IDIOMAS: Record<string, string> = {
   IE: "inglês", ES: "espanhol", MX: "espanhol", FR: "francês", IT: "italiano",
   DE: "alemão", AT: "alemão", CH: "alemão", NL: "holandês", BE: "francês ou holandês",
   LU: "alemão", "ZA": "inglês", AU: "inglês", CA: "inglês ou francês",
+  // nomes completos (como salvamos nos leads)
+  "brasil": "português (Brasil)", "portugal": "português (Portugal)",
+  "espanha": "espanhol", "spain": "espanhol", "méxico": "espanhol", "mexico": "espanhol",
+  "frança": "francês", "france": "francês", "itália": "italiano", "italy": "italiano",
+  "alemanha": "alemão", "germany": "alemão", "áustria": "alemão", "austria": "alemão",
+  "suíça": "alemão", "switzerland": "alemão", "luxemburgo": "alemão", "luxembourg": "alemão",
+  "países baixos": "holandês", "holanda": "holandês", "netherlands": "holandês",
+  "bélgica": "francês ou holandês", "belgium": "francês ou holandês",
+  "reino unido": "inglês", "united kingdom": "inglês", "irlanda": "inglês", "ireland": "inglês",
+  "estados unidos": "inglês", "united states": "inglês", "canadá": "inglês ou francês", "canada": "inglês ou francês",
+  "áfrica do sul": "inglês", "south africa": "inglês", "austrália": "inglês", "australia": "inglês",
 };
 
 export function idiomaDoPais(pais: string): string {
-  const code = (pais || "").toUpperCase();
-  return IDIOMAS[code] || "inglês";
+  const s = (pais || "").trim();
+  const code = s.toUpperCase();
+  if (IDIOMAS[code]) return IDIOMAS[code];
+  const lower = s.toLowerCase();
+  if (IDIOMAS[lower]) return IDIOMAS[lower];
+  // heurística: nomes que começam com o país ("Portugal", "França, ...")
+  for (const [k, v] of Object.entries(IDIOMAS)) {
+    if (/[a-zà-ú]/.test(k) && (lower.startsWith(k) || k.startsWith(lower))) return v;
+  }
+  return "inglês";
 }
 
 function promptMsg(l: MsgInput): string {
@@ -61,7 +80,7 @@ export async function gerarMensagem(l: MsgInput, apiKey: string | null): Promise
   if (apiKey) {
     try {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

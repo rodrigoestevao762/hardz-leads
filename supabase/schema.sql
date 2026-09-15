@@ -1,5 +1,13 @@
--- HardZ Leads — schema v1
+-- HardZ Leads — schema v1 (idempotente: pode rodar várias vezes sem erro)
 -- Cole e rode este script no SQL Editor do seu projeto Supabase.
+
+-- Limpa objetos anteriores (se existirem)
+drop table if exists public.messages cascade;
+drop table if exists public.leads cascade;
+drop table if exists public.settings cascade;
+drop type if exists lead_status cascade;
+drop type if exists lead_channel cascade;
+drop type if exists lead_level cascade;
 
 -- Tipos
 create type lead_status as enum ('novo', 'mensagem_gerada', 'enviado', 'respondido', 'cliente');
@@ -39,7 +47,7 @@ create table public.messages (
   lead_id uuid not null references public.leads(id) on delete cascade,
   canal text not null default 'email',
   texto text not null,
-  status text not null default 'gerada', -- gerada | enviada | erro
+  status text not null default 'gerada',
   erro text,
   criado_em timestamptz not null default now()
 );

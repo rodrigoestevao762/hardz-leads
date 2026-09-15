@@ -61,7 +61,7 @@ export async function buscarEmpresas(
     const [k, v] = t.split("=");
     return `nwr["${k}"="${esc(v)}"]${around};`;
   });
-  const query = `[out:json][timeout:40];(${selectors.join("")} out center 120;);`;
+  const query = `[out:json][timeout:40];(${selectors.join("")});out center 120;`;
 
   const UA = { "User-Agent": "HardZLeads/1.0 (prospeccao de empresas)" };
 

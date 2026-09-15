@@ -7,6 +7,7 @@ export async function supabaseServer() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      global: { headers: { "Accept-Profile": "public", "Content-Profile": "public" } },
       cookies: {
         getAll() {
           return cookieStore.getAll();
