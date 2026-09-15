@@ -1,7 +1,13 @@
 // Busca de empresas via Overpass API (OpenStreetMap) — gratuita, sem chave.
 // Docs: https://overpass-api.de/ — respeitar limites de uso (1 req/s).
 
-const OVERPASS_URL = "https://overpass-api.de/api/interpreter";
+// Endpoints públicos do Overpass — o principal fica sobrecarregado às vezes (504),
+// então tentamos os espelhos em sequência.
+const OVERPASS_ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+];
 
 export type EmpresaOSM = {
   osmId: string;
@@ -65,13 +71,34 @@ export async function buscarEmpresas(
 
   const UA = { "User-Agent": "HardZLeads/1.0 (prospeccao de empresas)" };
 
-  const res = await fetch(OVERPASS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", ...UA },
-    body: "data=" + encodeURIComponent(query),
-  });
-  if (!res.ok) throw new Error(`Overpass ${res.status}`);
-  const json = await res.json();
+  // Tenta cada endpoint; em caso de erro de rede ou 5xx/429 passa para o próximo.
+  let json: { elements?: any[] } | null = null;
+  let ultimoErro: Error | null = null;
+  for (const url of OVERPASS_ENDPOINTS) {
+    for (let tentativa = 0; tentativa < 2; tentativa++) {
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded", ...UA },
+          body: "data=" + encodeURIComponent(query),
+          signal: AbortSignal.timeout(90_000),
+        });
+        if (res.ok) {
+          json = await res.json();
+          break;
+        }
+        ultimoErro = new Error(`Overpass ${res.status}`);
+        if (res.status === 400) throw ultimoErro; // query inválida: não adianta repetir
+      } catch (e) {
+        ultimoErro = e instanceof Error ? e : new Error(String(e));
+        if (ultimoErro.message.startsWith("Overpass 400")) throw ultimoErro;
+      }
+      // pequena pausa antes de repetir o mesmo endpoint
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+    if (json) break;
+  }
+  if (!json) throw ultimoErro || new Error("Overpass indisponível");
 
   const seen = new Set<string>();
   const out: EmpresaOSM[] = [];
