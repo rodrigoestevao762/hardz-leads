@@ -5,6 +5,8 @@ const get = (k) => (env.match(new RegExp("^" + k + "=(.*)$", "m")) || [])[1]?.tr
 const URL_SUPA = get("NEXT_PUBLIC_SUPABASE_URL");
 const KEY = get("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 
+const BASE = process.env.BASE_URL || "http://localhost:3000";
+
 const ref = URL_SUPA.match(/https:\/\/([^.]+)\.supabase\.co/)[1];
 const email = "teste@hardzleads.com";
 const senha = "hardz1234";
@@ -24,7 +26,7 @@ const cookieVal = "base64-" + Buffer.from(JSON.stringify(session), "utf8").toStr
 const cookieName = `sb-${ref}-auth-token`;
 
 // Chama a API de busca do app com a sessao
-const appRes = await fetch("http://localhost:3000/api/buscar", {
+const appRes = await fetch(`${BASE}/api/buscar`, {
   method: "POST",
   headers: { "Content-Type": "application/json", Cookie: `${cookieName}=${encodeURIComponent(cookieVal)}` },
   body: JSON.stringify({ cidade: "Lisboa", categoria: "barbearia", pais: "Portugal" }),
@@ -69,7 +71,7 @@ if (appRes.status === 200) {
   }
 
   // Gera mensagem via Gemini
-  const genRes = await fetch("http://localhost:3000/api/gerar-mensagem", {
+  const genRes = await fetch(BASE+"/api/gerar-mensagem", {
     method: "POST",
     headers: { "Content-Type": "application/json", Cookie: `${cookieName}=${encodeURIComponent(cookieVal)}` },
     body: JSON.stringify({ leadId: lead.id }),
