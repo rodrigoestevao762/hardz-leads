@@ -7,6 +7,7 @@ import { supabaseBrowser } from "@/lib/supabase-browser";
 const LINKS = [
   { href: "/app", label: "Leads" },
   { href: "/app/busca", label: "Buscar empresas" },
+  { href: "/app/mapa", label: "Mapa mundial" },
   { href: "/app/configuracoes", label: "Configurações" },
 ];
 

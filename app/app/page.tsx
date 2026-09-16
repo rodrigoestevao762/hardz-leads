@@ -36,13 +36,21 @@ const NIVEL_ESTILO: Record<Lead["nivel"], { borda: string; badge: string; icone:
   },
 };
 
+const ABAS: { id: string; label: string; statuses: Lead["status"][] | null }[] = [
+  { id: "contato", label: "Para contato", statuses: ["novo", "mensagem_gerada"] },
+  { id: "enviado", label: "Enviados", statuses: ["enviado"] },
+  { id: "respondido", label: "Respondidos", statuses: ["respondido"] },
+  { id: "cliente", label: "Clientes", statuses: ["cliente"] },
+  { id: "all", label: "Todos", statuses: null },
+];
+
 export default function LeadsPage() {
   const router = useRouter();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [fCat, setFCat] = useState("all");
   const [fNivel, setFNivel] = useState("all");
-  const [fStatus, setFStatus] = useState("all");
+  const [aba, setAba] = useState("contato");
   const [busca, setBusca] = useState("");
   const [msgAberta, setMsgAberta] = useState<Record<string, string>>({});
   const [ocupado, setOcupado] = useState<string | null>(null);
@@ -58,13 +66,24 @@ export default function LeadsPage() {
 
   useEffect(() => { carregar(); }, [carregar]);
 
-  const visiveis = useMemo(() => leads.filter((l) => {
-    if (fCat !== "all" && l.categoria !== fCat) return false;
-    if (fNivel !== "all" && l.nivel !== fNivel) return false;
-    if (fStatus !== "all" && l.status !== fStatus) return false;
-    if (busca && !(l.nome + " " + l.cidade + " " + l.pais).toLowerCase().includes(busca.toLowerCase())) return false;
-    return true;
-  }), [leads, fCat, fNivel, fStatus, busca]);
+  const visiveis = useMemo(() => {
+    const abaAtual = ABAS.find((a) => a.id === aba)!;
+    return leads.filter((l) => {
+      if (abaAtual.statuses && !abaAtual.statuses.includes(l.status)) return false;
+      if (fCat !== "all" && l.categoria !== fCat) return false;
+      if (fNivel !== "all" && l.nivel !== fNivel) return false;
+      if (busca && !(l.nome + " " + l.cidade + " " + l.pais).toLowerCase().includes(busca.toLowerCase())) return false;
+      return true;
+    });
+  }, [leads, aba, fCat, fNivel, busca]);
+
+  const contagemAba = useMemo(() => {
+    const m: Record<string, number> = {};
+    for (const a of ABAS) {
+      m[a.id] = a.statuses ? leads.filter((l) => a.statuses!.includes(l.status)).length : leads.length;
+    }
+    return m;
+  }, [leads]);
 
   async function atualizar(id: string, campos: Partial<Lead>) {
     await supabaseBrowser().from("leads").update(campos).eq("id", id);
@@ -83,24 +102,35 @@ export default function LeadsPage() {
     if (l.status === "novo") atualizar(l.id, { status: "mensagem_gerada" });
   }
 
-  async function enviarEmail(l: Lead) {
-    const texto = msgAberta[l.id];
-    if (!texto) return setAviso("Gere a mensagem primeiro");
-    setOcupado(l.id + ":email"); setAviso(null);
-    const res = await fetch("/api/enviar-email", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ leadId: l.id, texto }),
+  async function enviarAuto(l: Lead) {
+    setOcupado(l.id + ":auto"); setAviso(null);
+    const res = await fetch("/api/enviar-automatico", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
     });
     const json = await res.json();
     setOcupado(null);
     if (!res.ok) return setAviso("Erro: " + json.erro);
+    setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
     await atualizar(l.id, { status: "enviado", canal: "email" });
-    setAviso(`E-mail enviado para ${l.email}`);
+    setAviso(`✓ e-mail enviado para ${l.email} — o lead saiu de "Para contato" e entrou em "Enviados"`);
   }
 
-  function abrirDM(l: Lead) {
+  async function abrirDM(l: Lead) {
     if (!l.instagram) return setAviso("Lead sem Instagram — cole o @ no campo e salve");
-    navigator.clipboard.writeText(msgAberta[l.id] || "");
+    if (!msgAberta[l.id]) {
+      setOcupado(l.id + ":gerar"); setAviso(null);
+      const res = await fetch("/api/gerar-mensagem", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
+      });
+      const json = await res.json();
+      setOcupado(null);
+      if (!res.ok) return setAviso("Erro: " + json.erro);
+      setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
+      if (l.status === "novo") atualizar(l.id, { status: "mensagem_gerada" });
+      navigator.clipboard.writeText(json.texto);
+    } else {
+      navigator.clipboard.writeText(msgAberta[l.id]);
+    }
     window.open(`https://ig.me/m/${l.instagram.replace("@", "")}`, "_blank");
     atualizar(l.id, { status: "enviado", canal: "dm" });
   }
@@ -128,6 +158,21 @@ export default function LeadsPage() {
         </div>
       </div>
 
+      {/* Abas de status */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {ABAS.map((a) => (
+          <button key={a.id} onClick={() => setAba(a.id)}
+            className={`mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest transition ${
+              aba === a.id
+                ? "bg-[rgba(45,255,180,0.12)] text-[var(--signal)] shadow-[inset_0_0_0_1px_rgba(45,255,180,0.35)]"
+                : "text-[var(--ink-dim)] hover:bg-white/5 hover:text-[var(--ink)]"
+            }`}>
+            {a.label}
+            <span className="ml-2 text-[var(--ink-faint)]">{contagemAba[a.id]}</span>
+          </button>
+        ))}
+      </div>
+
       {/* Filtros */}
       <div className="panel mb-5 flex flex-wrap items-center gap-2 rounded-2xl p-3">
         <select value={fCat} onChange={(e) => setFCat(e.target.value)} className="field mono rounded-lg px-2.5 py-1.5 text-xs">
@@ -136,10 +181,6 @@ export default function LeadsPage() {
         </select>
         <select value={fNivel} onChange={(e) => setFNivel(e.target.value)} className="field mono rounded-lg px-2.5 py-1.5 text-xs">
           <option value="all">Todos níveis</option><option value="quente">🔥 Quente</option><option value="morno">◐ Morno</option><option value="frio">○ Frio</option>
-        </select>
-        <select value={fStatus} onChange={(e) => setFStatus(e.target.value)} className="field mono rounded-lg px-2.5 py-1.5 text-xs">
-          <option value="all">Todos status</option>
-          {Object.entries(STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
         <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar nome/cidade..."
           className="field mono min-w-44 flex-1 rounded-lg px-3 py-1.5 text-xs" />
@@ -199,20 +240,25 @@ export default function LeadsPage() {
                   className="field mt-3 w-full rounded-xl p-3.5 text-sm leading-relaxed" />
               )}
               <div className="mt-3.5 flex flex-wrap gap-2">
-                <button onClick={() => gerar(l)} disabled={ocupado === l.id + ":gerar"}
-                  className="btn-signal mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest disabled:opacity-50">
+                {l.email && l.status !== "enviado" && l.status !== "respondido" && l.status !== "cliente" && (
+                  <button onClick={() => enviarAuto(l)} disabled={!!ocupado}
+                    className="mono rounded-lg bg-[var(--signal)]/15 px-3.5 py-2 text-[10px] uppercase tracking-widest text-[var(--signal)] shadow-[inset_0_0_0_1px_rgba(45,255,180,0.4)] transition hover:bg-[var(--signal)]/25 disabled:opacity-50">
+                    {ocupado === l.id + ":auto" ? "enviando..." : "⚡ enviar e-mail"}
+                  </button>
+                )}
+                {l.status === "enviado" && (
+                  <span className="mono rounded-lg bg-[var(--signal)]/8 px-3.5 py-2 text-[10px] uppercase tracking-widest text-[var(--ink-faint)]">
+                    ✓ {l.canal === "dm" ? "DM enviada" : "e-mail enviado"}
+                  </span>
+                )}
+                <button onClick={() => gerar(l)} disabled={!!ocupado}
+                  className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest disabled:opacity-50">
                   {ocupado === l.id + ":gerar" ? "gerando..." : msgAberta[l.id] ? "↻ regerar" : "✦ gerar mensagem"}
                 </button>
                 {msgAberta[l.id] && (
                   <button onClick={() => navigator.clipboard.writeText(msgAberta[l.id])}
                     className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest">
                     ⧉ copiar
-                  </button>
-                )}
-                {l.email && msgAberta[l.id] && (
-                  <button onClick={() => enviarEmail(l)} disabled={ocupado === l.id + ":email"}
-                    className="mono rounded-lg bg-[var(--signal)]/15 px-3.5 py-2 text-[10px] uppercase tracking-widest text-[var(--signal)] shadow-[inset_0_0_0_1px_rgba(45,255,180,0.4)] transition hover:bg-[var(--signal)]/25 disabled:opacity-50">
-                    {ocupado === l.id + ":email" ? "enviando..." : "✉ enviar e-mail"}
                   </button>
                 )}
                 <button onClick={() => abrirDM(l)}

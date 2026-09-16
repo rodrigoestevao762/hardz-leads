@@ -48,7 +48,9 @@ export async function geocodificar(cidade: string, pais?: string): Promise<{ lat
   return { lat: parseFloat(d.lat), lng: parseFloat(d.lon), radiusM, paisNome: d.display_name?.split(",").pop()?.trim() || pais || "" };
 }
 
-/** Busca empresas por tags num raio ao redor do ponto. */
+/** Busca empresas por tags num raio ao redor do ponto.
+ *  `classificar` (opcional): recebe as tags OSM do elemento e devolve o id da categoria —
+ *  usado no mapa, onde a busca junta tags de todas as categorias. */
 export async function buscarEmpresas(
   categoriaId: string,
   tags: string[],
@@ -56,7 +58,8 @@ export async function buscarEmpresas(
   lng: number,
   radiusM: number,
   cidade: string,
-  pais: string
+  pais: string,
+  classificar?: (t: Record<string, string>) => string
 ): Promise<EmpresaOSM[]> {
   const around = `(around:${radiusM},${lat},${lng})`;
   const selectors = tags.map((t) => {
@@ -119,7 +122,7 @@ export async function buscarEmpresas(
     out.push({
       osmId,
       nome: t.name,
-      categoria: categoriaId,
+      categoria: classificar ? classificar(t) : categoriaId,
       cidade,
       pais,
       lat: clat,
