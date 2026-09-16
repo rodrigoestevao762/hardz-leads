@@ -42,6 +42,8 @@ export default function EditorLanding() {
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [salvo, setSalvo] = useState(false);
+  const [publicaUrl, setPublicaUrl] = useState<string | null>(null);
+  const [copiado, setCopiado] = useState(false);
 
   // refs para os handlers dentro do iframe lerem o valor mais recente
   const textosRef = useRef<TextosLanding | null>(null);
@@ -81,6 +83,9 @@ export default function EditorLanding() {
       setTextos(t);
       setAccent(a);
       setTema(tm);
+      if (landing.publicada && landing.slug) {
+        setPublicaUrl(`${window.location.origin}/s/${landing.slug}`);
+      }
       reconstruir(
         t, a, tm,
         { nome: ld.nome, categoriaLabel: ld.categoria, cidade: ld.cidade, telefone: ld.telefone, email: ld.email, instagram: ld.instagram, endereco: ld.endereco }
@@ -134,18 +139,55 @@ export default function EditorLanding() {
     setEstado("pronto");
   }
 
-  async function salvar() {
-    if (!textos) return;
-    setOcupado("salvar"); setAviso(null);
+  async function salvarAgora(): Promise<boolean> {
+    if (!textos) return false;
     const res = await fetch("/api/salvar-landing", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ leadId, textos, accent, tema }),
     });
     const json = await res.json();
+    if (!res.ok) { setAviso("Erro: " + json.erro); return false; }
+    return true;
+  }
+
+  async function salvar() {
+    setOcupado("salvar"); setAviso(null);
+    const ok = await salvarAgora();
+    setOcupado(null);
+    if (ok) { setSalvo(true); setTimeout(() => setSalvo(false), 2500); }
+  }
+
+  async function publicar() {
+    setOcupado("publicar"); setAviso(null);
+    const ok = await salvarAgora();
+    if (!ok) { setOcupado(null); return; }
+    const res = await fetch("/api/publicar-landing", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ leadId }),
+    });
+    const json = await res.json();
     setOcupado(null);
     if (!res.ok) return setAviso("Erro: " + json.erro);
-    setSalvo(true);
-    setTimeout(() => setSalvo(false), 2500);
+    setPublicaUrl(json.url);
+  }
+
+  async function despublicar() {
+    setOcupado("despublicar"); setAviso(null);
+    const res = await fetch("/api/publicar-landing", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ leadId, publicar: false }),
+    });
+    const json = await res.json();
+    setOcupado(null);
+    if (!res.ok) return setAviso("Erro: " + json.erro);
+    setPublicaUrl(null);
+  }
+
+  function copiar() {
+    if (!publicaUrl) return;
+    navigator.clipboard.writeText(publicaUrl);
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
   }
 
   function baixar() {
@@ -254,6 +296,72 @@ export default function EditorLanding() {
       <p className="mono mt-3 text-center text-[10px] uppercase tracking-widest text-[var(--ink-faint)]">
         as alterações no texto são aplicadas na hora — clique em salvar para guardar
       </p>
+
+      {/* Publicação */}
+      <div className="panel mt-4 rounded-2xl p-5">
+        <div className="flex flex-wrap items-center gap-3">
+          <div>
+            <p className="eyebrow">Hospedagem grátis</p>
+            <h2 className="text-sm font-semibold">Publicar este site na internet</h2>
+          </div>
+          <div className="ml-auto flex flex-wrap gap-2">
+            {publicaUrl ? (
+              <button onClick={despublicar} disabled={!!ocupado}
+                className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest disabled:opacity-50">
+                {ocupado === "despublicar" ? "..." : "despublicar"}
+              </button>
+            ) : (
+              <button onClick={publicar} disabled={!!ocupado}
+                className="btn-signal mono rounded-lg px-4 py-2 text-[10px] uppercase tracking-widest disabled:opacity-50">
+                {ocupado === "publicar" ? "publicando..." : "↑ publicar site grátis"}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {publicaUrl && (
+          <div className="mt-4 rounded-xl border border-[var(--signal)]/30 bg-[var(--signal)]/5 p-4">
+            <p className="mono text-[10px] uppercase tracking-widest text-[var(--ink-dim)]">
+              ✓ site no ar — link para enviar ao cliente
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <a href={publicaUrl} target="_blank" rel="noopener"
+                className="mono break-all text-xs text-[var(--signal)] underline underline-offset-4">
+                {publicaUrl}
+              </a>
+              <button onClick={copiar}
+                className="btn-ghost mono shrink-0 rounded-lg px-3 py-1.5 text-[10px] uppercase tracking-widest">
+                {copiado ? "✓ copiado" : "copiar link"}
+              </button>
+            </div>
+            <p className="mono mt-3 text-[10px] uppercase tracking-widest text-[var(--ink-faint)]">
+              toda alteração salva no editor aparece no site na hora
+            </p>
+          </div>
+        )}
+
+        <div className="mt-5 border-t border-[var(--line)] pt-5">
+          <p className="eyebrow">Domínio próprio</p>
+          <p className="mt-2 text-xs leading-relaxed text-[var(--ink-dim)]">
+            Quer um endereço tipo <span className="mono text-[var(--signal)]">barbearia-do-joao.com</span>?
+            Compre um domínio, aponte para a Vercel e o site passa a responder nele — sem custo extra de hospedagem.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a href="https://www.hostinger.com.br/registro-de-dominios" target="_blank" rel="noopener"
+              className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest">Hostinger</a>
+            <a href="https://www.namecheap.com/domains/" target="_blank" rel="noopener"
+              className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest">Namecheap</a>
+            <a href="https://www.godaddy.com/pt-br/registro-de-dominio" target="_blank" rel="noopener"
+              className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest">GoDaddy</a>
+            <a href="https://registro.br/" target="_blank" rel="noopener"
+              className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest">Registro.br (.br)</a>
+          </div>
+          <p className="mono mt-4 text-[10px] leading-relaxed tracking-wide text-[var(--ink-faint)]">
+            depois de comprar: no painel DNS do vendedor, crie A @ 76.76.21.21 e CNAME www → cname.vercel-dns.com,
+            depois adicione o domínio em vercel.com → projeto prospectandoai → settings → domains
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
