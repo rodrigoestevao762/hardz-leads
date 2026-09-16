@@ -8,7 +8,7 @@ const KEY = get("NEXT_PUBLIC_SUPABASE_ANON_KEY");
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 
 const ref = URL_SUPA.match(/https:\/\/([^.]+)\.supabase\.co/)[1];
-const email = "teste@hardzleads.com";
+const email = "teste@prospectandoai.com";
 const senha = "hardz1234";
 
 const res = await fetch(`${URL_SUPA}/auth/v1/token?grant_type=password`, {

@@ -12,7 +12,7 @@ const ref = URL_SUPA.match(/https:\/\/([^.]+)\.supabase\.co/)[1];
 const res = await fetch(`${URL_SUPA}/auth/v1/token?grant_type=password`, {
   method: "POST",
   headers: { "Content-Type": "application/json", apikey: KEY },
-  body: JSON.stringify({ email: "teste@hardzleads.com", password: "hardz1234" }),
+  body: JSON.stringify({ email: "teste@prospectandoai.com", password: "hardz1234" }),
 });
 if (!res.ok) { console.log("LOGIN FALHOU", res.status); process.exit(1); }
 const session = await res.json();

@@ -9,7 +9,7 @@ const ref = URL_SUPA.match(/https:\/\/([^.]+)\.supabase\.co/)[1];
 
 const login = await fetch(`${URL_SUPA}/auth/v1/token?grant_type=password`, {
   method: "POST", headers: { "Content-Type": "application/json", apikey: KEY },
-  body: JSON.stringify({ email: "teste@hardzleads.com", password: "hardz1234" }),
+  body: JSON.stringify({ email: "teste@prospectandoai.com", password: "hardz1234" }),
 });
 const session = await login.json();
 const cookie = `sb-${ref}-auth-token=${encodeURIComponent("base64-" + Buffer.from(JSON.stringify(session), "utf8").toString("base64"))}`;
