@@ -1,48 +1,84 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Função para buscar dados em páginas web
-async function searchWeb(query: string): Promise<string> {
+// Função auxiliar para fazer o fetch com timeout e headers que disfarçam o bot
+async function fetchHtml(url: string): Promise<string> {
   try {
-    const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
     const res = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+      },
+      signal: AbortSignal.timeout(8000) // 8 seg de limite
     });
-    const html = await res.text();
-    return html;
+    return await res.text();
   } catch (err) {
-    console.error('Erro na busca web:', err);
     return '';
   }
 }
 
+// 3 Motores de Busca Diferentes (Estratégia OSINT)
+async function searchYahoo(query: string): Promise<string> {
+  return await fetchHtml(`https://search.yahoo.com/search?p=${encodeURIComponent(query)}`);
+}
+
+async function searchBing(query: string): Promise<string> {
+  return await fetchHtml(`https://www.bing.com/search?q=${encodeURIComponent(query)}`);
+}
+
+async function searchDuckDuckGo(query: string): Promise<string> {
+  return await fetchHtml(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`);
+}
+
 function extractSocialLinks(html: string) {
-  const instagramMatch = html.match(/https?:\/\/(www\.)?instagram\.com\/[A-Za-z0-9_.]+/i);
-  const facebookMatch = html.match(/https?:\/\/(www\.)?facebook\.com\/[A-Za-z0-9_.-]+/i);
+  // Extrai Instagram (ignorando posts/reels/etc)
+  const instaMatches = html.match(/instagram\.com\/([A-Za-z0-9_.]+)/gi) || [];
+  const instagram = instaMatches.find(link => !link.includes('/p/') && !link.includes('/reel/') && !link.includes('/explore/') && !link.includes('/stories/'));
+
+  // Extrai Facebook (ignorando rotas genéricas)
+  const fbMatches = html.match(/facebook\.com\/([A-Za-z0-9_.-]+)/gi) || [];
+  const facebook = fbMatches.find(link => !link.includes('/groups/') && !link.includes('/events/') && !link.includes('/public/') && !link.includes('/share.php'));
+
+  // Extrai Emails
   const emailMatches = html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
   
-  // Filtra e-mails de erro internos do DuckDuckGo ou Sentry
-  const emailValido = emailMatches.find(e => !e.includes("duckduckgo.com") && !e.includes("sentry") && !e.includes("example.com"));
+  // Filtra e-mails sujos (falsos positivos dos motores)
+  const dominiosBloqueados = ["duckduckgo.com", "sentry.io", "example.com", "w3.org", "sijax", "bing.com", "yahoo.com"];
+  const emailValido = emailMatches.find(e => !dominiosBloqueados.some(d => e.toLowerCase().includes(d)));
 
   return {
-    instagram: instagramMatch ? instagramMatch[0] : null,
-    facebook: facebookMatch ? facebookMatch[0] : null,
-    email: emailValido || null,
+    instagram: instagram ? (instagram.startsWith('http') ? instagram : `https://www.${instagram}`) : null,
+    facebook: facebook ? (facebook.startsWith('http') ? facebook : `https://www.${facebook}`) : null,
+    email: emailValido ? emailValido.toLowerCase() : null,
   };
 }
 
 export async function enrichLeadData(nome: string, cidade: string, uf: string = '') {
-  const query = `"${nome}" ${cidade} ${uf} instagram facebook contato`;
-  const html = await searchWeb(query);
+  const queryPadrao = `"${nome}" ${cidade} ${uf}`;
   
-  const links = extractSocialLinks(html);
+  // Dispara buscas paralelas usando Dorks específicos para maximizar o resultado
+  const [htmlYahoo, htmlBing, htmlDuck] = await Promise.all([
+    // Yahoo procura genérico por contatos
+    searchYahoo(`${queryPadrao} contato email`),
+    // Bing foca em achar e-mails comuns de pequenos negócios
+    searchBing(`${queryPadrao} "@gmail.com" OR "@hotmail.com" OR "@yahoo.com"`),
+    // DuckDuckGo usa Dorks focados nas redes sociais
+    searchDuckDuckGo(`${queryPadrao} site:instagram.com OR site:facebook.com`)
+  ]);
+  
+  // Junta todo o código-fonte retornado pelas 3 ferramentas
+  const htmlUnificado = htmlYahoo + " " + htmlBing + " " + htmlDuck;
+  
+  const links = extractSocialLinks(htmlUnificado);
+  
+  let fontesUsadas = [];
+  if (htmlDuck.length > 0) fontesUsadas.push('DuckDuckGo');
+  if (htmlYahoo.length > 0) fontesUsadas.push('Yahoo');
+  if (htmlBing.length > 0) fontesUsadas.push('Bing');
   
   return {
     instagram: links.instagram,
     facebook: links.facebook,
     email: links.email,
-    fontes: ['DuckDuckGo Busca'],
+    fontes: fontesUsadas,
   };
 }
-
