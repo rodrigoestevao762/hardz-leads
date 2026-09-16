@@ -53,27 +53,31 @@ function extractSocialLinks(html: string) {
 }
 
 export async function enrichLeadData(nome: string, cidade: string, uf: string = '') {
-  const queryPadrao = `"${nome}" ${cidade} ${uf}`;
+  const queryPadrao = `"${nome}" ${cidade} ${uf}`.trim();
   
   // Dispara buscas paralelas usando Dorks específicos para maximizar o resultado
-  const [htmlYahoo, htmlBing, htmlDuck] = await Promise.all([
+  const [htmlYahoo, htmlBing, htmlDuck, htmlDuckBroad, htmlBingBroad] = await Promise.all([
     // Yahoo procura genérico por contatos
     searchYahoo(`${queryPadrao} contato email`),
-    // Bing foca em achar e-mails comuns de pequenos negócios
+    // Bing com dorks
     searchBing(`${queryPadrao} "@gmail.com" OR "@hotmail.com" OR "@yahoo.com"`),
-    // DuckDuckGo usa Dorks focados nas redes sociais
-    searchDuckDuckGo(`${queryPadrao} site:instagram.com OR site:facebook.com`)
+    // DuckDuckGo focado em domínios oficiais
+    searchDuckDuckGo(`${queryPadrao} site:instagram.com OR site:facebook.com`),
+    // Busca ampla no DuckDuckGo (para achar Linktrees e diretórios que listam o insta deles)
+    searchDuckDuckGo(`${nome} ${cidade} instagram perfil`),
+    // Busca ampla no Bing
+    searchBing(`${nome} ${cidade} instagram oficial`)
   ]);
   
-  // Junta todo o código-fonte retornado pelas 3 ferramentas
-  const htmlUnificado = htmlYahoo + " " + htmlBing + " " + htmlDuck;
+  // Junta todo o código-fonte retornado pelas 5 varreduras
+  const htmlUnificado = htmlYahoo + " " + htmlBing + " " + htmlDuck + " " + htmlDuckBroad + " " + htmlBingBroad;
   
   const links = extractSocialLinks(htmlUnificado);
   
   let fontesUsadas = [];
-  if (htmlDuck.length > 0) fontesUsadas.push('DuckDuckGo');
+  if (htmlDuck.length > 0 || htmlDuckBroad.length > 0) fontesUsadas.push('DuckDuckGo');
   if (htmlYahoo.length > 0) fontesUsadas.push('Yahoo');
-  if (htmlBing.length > 0) fontesUsadas.push('Bing');
+  if (htmlBing.length > 0 || htmlBingBroad.length > 0) fontesUsadas.push('Bing');
   
   return {
     instagram: links.instagram,
