@@ -62,7 +62,7 @@ export async function POST(req: Request) {
       .eq("id", landing.id);
     if (error) return NextResponse.json({ erro: error.message }, { status: 500 });
 
-    const site = process.env.NEXT_PUBLIC_SITE_URL || "https://prospectandoai.vercel.app";
+    const site = (process.env.NEXT_PUBLIC_SITE_URL || "https://prospectandoai.vercel.app").trim().replace(/\/+$/, "");
     return NextResponse.json({ ok: true, publicada: true, slug, url: `${site}/s/${slug}` });
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
