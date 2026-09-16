@@ -180,6 +180,33 @@ export default function LeadsPage() {
     setAviso(`${paraExcluir.length} leads excluídos com sucesso.`);
   }
 
+  async function disparoEmLote() {
+    const paraEnviar = visiveis.filter(l => l.email && ["novo", "mensagem_gerada"].includes(l.status));
+    if (paraEnviar.length === 0) return setAviso("Nenhum lead com e-mail disponível para envio nesta lista.");
+    if (!confirm(`Deseja disparar e-mails com IA para ${paraEnviar.length} leads?`)) return;
+    
+    let sucessos = 0;
+    for (const l of paraEnviar) {
+      setAviso(`Enviando para ${l.nome}... (${sucessos}/${paraEnviar.length})`);
+      setOcupado(l.id + ":auto");
+      const res = await fetch("/api/enviar-automatico", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
+      });
+      const json = await res.json();
+      setOcupado(null);
+      if (res.ok) {
+        setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
+        await atualizar(l.id, { status: "enviado", canal: "email" });
+        sucessos++;
+      } else {
+        setAviso(`Falha ao enviar para ${l.nome}: ${json.erro}`);
+        await new Promise(r => setTimeout(r, 2000));
+      }
+      await new Promise(r => setTimeout(r, 1000)); // anti-spam delay
+    }
+    setAviso(`Disparo concluído: ${sucessos} e-mails enviados.`);
+  }
+
   const contagem = {
     quente: visiveis.filter((l) => l.nivel === "quente").length,
     morno: visiveis.filter((l) => l.nivel === "morno").length,
@@ -231,6 +258,9 @@ export default function LeadsPage() {
           className="field mono min-w-44 flex-1 rounded-lg px-3 py-1.5 text-xs" />
         <button onClick={enriquecerEmLote} disabled={!!ocupado} className="button bg-[rgba(45,255,180,0.12)] text-[var(--signal)] rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_rgba(45,255,180,0.35)] hover:bg-[rgba(45,255,180,0.2)] disabled:opacity-50">
           Enriquecer Lote
+        </button>
+        <button onClick={disparoEmLote} disabled={!!ocupado} className="button bg-[#c9974c]/15 text-[#c9974c] rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_rgba(201,151,76,0.35)] hover:bg-[#c9974c]/25 disabled:opacity-50">
+          Disparo (E-mails)
         </button>
         <button onClick={limparSemRedes} disabled={!!ocupado} className="button bg-[var(--alert)]/10 text-[var(--alert)] rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_var(--alert)] hover:bg-[var(--alert)]/20 disabled:opacity-50">
           Limpar s/ Insta
