@@ -74,7 +74,17 @@ export default function ConfigPage() {
         <div>
           <label className="mono mb-1.5 block text-[10px] uppercase tracking-widest text-[var(--ink-dim)]">Senha de Aplicativo (App Password) do Gmail</label>
           <input className={campo} type="password" placeholder="abcd efgh ijkl mnop" value={s.resend_api_key || ""} onChange={(e) => setS({ ...s, resend_api_key: e.target.value })} />
-          <p className="mono mt-1.5 text-[10px] uppercase tracking-widest text-[var(--ink-faint)]">Gere em: Conta Google -&gt; Segurança -&gt; Verificação em 2 Etapas -&gt; Senhas de App</p>
+          
+          <div className="mt-3 rounded-lg bg-[var(--ink)]/5 p-3.5 text-xs text-[var(--ink-dim)]">
+            <p className="font-semibold text-[var(--ink)] mb-1">Como gerar a Senha de App (1 minuto):</p>
+            <ol className="list-decimal list-inside space-y-1 ml-1 opacity-80">
+              <li>Acesse a sua <a href="https://myaccount.google.com/security" target="_blank" className="text-[var(--signal)] hover:underline">Conta do Google (Segurança)</a>.</li>
+              <li>Certifique-se de que a <strong>Verificação em 2 etapas</strong> está ativada.</li>
+              <li>Busque por <strong>"Senhas de app"</strong> na barra de pesquisa do Google Account.</li>
+              <li>Crie uma nova senha chamada "ProspectandoAI".</li>
+              <li>Copie a senha de 16 letras amarela e cole no campo acima. (Não use sua senha pessoal).</li>
+            </ol>
+          </div>
         </div>
         <button onClick={salvar} className="btn-signal mono rounded-xl px-6 py-2.5 text-[11px] uppercase tracking-widest">
           {salvo ? "✓ transmitido" : "salvar"}

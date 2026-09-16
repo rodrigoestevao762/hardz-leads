@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { buscarDuckDuckGo } from "@/lib/enrichment";
+import { enrichLeadData } from "@/lib/enrichment";
 
 export async function POST(req: Request) {
   try {
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     }
 
     // Apenas busca as redes sem salvar no banco
-    const enrichment = await buscarDuckDuckGo(nome, cidade, pais);
+    const enrichment = await enrichLeadData(nome, cidade, pais);
 
     return NextResponse.json({
       success: true,
@@ -21,3 +21,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message || "Erro no servidor" }, { status: 500 });
   }
 }
+
