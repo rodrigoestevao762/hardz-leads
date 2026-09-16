@@ -25,6 +25,7 @@ export default function BuscaPage() {
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [checando, setChecando] = useState<string | null>(null);
+  const [somenteInstagram, setSomenteInstagram] = useState(false);
 
   async function checarRedes(emp: Empresa) {
     setChecando(emp.osmId);
@@ -101,26 +102,32 @@ export default function BuscaPage() {
 
       {resultados && (
         <>
-          <p className="mono mt-6 text-[11px] uppercase tracking-widest text-[var(--ink-dim)]">
-            ▸ {resultados.length} alvos detectados — melhores primeiro
-          </p>
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+            <p className="mono text-[11px] uppercase tracking-widest text-[var(--ink-dim)]">
+              · {somenteInstagram ? resultados.filter(e => e.instagram).length : resultados.length} alvos detectados — melhores primeiro
+            </p>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={somenteInstagram} onChange={(e) => setSomenteInstagram(e.target.checked)} className="accent-[var(--signal)]" />
+              <span className="mono text-[10px] uppercase tracking-widest text-[#e879f9]">só com Instagram</span>
+            </label>
+          </div>
           <div className="mt-3 flex flex-col gap-3">
-            {resultados.map((emp) => (
+            {(somenteInstagram ? resultados.filter(e => e.instagram) : resultados).map((emp) => (
               <div key={emp.osmId} className="panel panel-hover flex flex-wrap items-center gap-2 rounded-2xl p-4">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2.5">
                     <h2 className="font-semibold tracking-tight">{emp.nome}</h2>
                     <span className={`badge ${NIVEL_ESTILO[emp.nivel]}`}>
-                      {emp.nivel === "quente" ? "🔥" : emp.nivel === "morno" ? "◐" : "○"} {emp.nivel} · {emp.score}
+                      {emp.nivel === "quente" ? "🔥" : emp.nivel === "morno" ? "💡" : "❄"} {emp.nivel} • {emp.score}
                     </span>
                   </div>
                   <p className="mono mt-1.5 text-[11px] leading-relaxed text-[var(--ink-dim)]">
                     {emp.endereco || emp.cidade}
-                    {emp.telefone && <> · ☎ {emp.telefone}</>}
-                    {emp.website && <> · ▣ <span className="text-[var(--ink-faint)]">tem site</span></>}
-                    {!emp.website && <span className="font-semibold text-[var(--signal)]"> · ▣ sem site ✓</span>}
-                    {emp.instagram && <> · ◆ {emp.instagram}</>}
-                    {emp.email && <> · ✉ {emp.email}</>}
+                    {emp.telefone && <> • 📞 {emp.telefone}</>}
+                    {emp.website && <> • 🌐 <span className="text-[var(--ink-faint)]">tem site</span></>}
+                    {!emp.website && <span className="font-semibold text-[var(--signal)]"> • 🚫 sem site ✔</span>}
+                    {emp.instagram && <> • 💜 {emp.instagram}</>}
+                    {emp.email && <> • ✉ {emp.email}</>}
                   </p>
                 </div>
                 <div className="flex gap-2">
