@@ -68,13 +68,13 @@ export default function ConfigPage() {
         </div>
         <div className="glow-line" />
         <div>
-          <label className="mono mb-1.5 block text-[10px] uppercase tracking-widest text-[var(--ink-dim)]">Resend — chave da API (envio automático)</label>
-          <input className={campo} type="password" placeholder="re_..." value={s.resend_api_key || ""} onChange={(e) => setS({ ...s, resend_api_key: e.target.value })} />
-          <p className="mono mt-1.5 text-[10px] uppercase tracking-widest text-[var(--ink-faint)]">grátis: 100 e-mails/dia · resend.com/api-keys</p>
+          <label className="mono mb-1.5 block text-[10px] uppercase tracking-widest text-[var(--ink-dim)]">E-mail do Gmail (ex: hardzsites@gmail.com)</label>
+          <input className={campo} type="email" placeholder="hardzsites@gmail.com" value={s.remetente_email || ""} onChange={(e) => setS({ ...s, remetente_email: e.target.value })} />
         </div>
         <div>
-          <label className="mono mb-1.5 block text-[10px] uppercase tracking-widest text-[var(--ink-dim)]">E-mail remetente (domínio verificado no Resend)</label>
-          <input className={campo} type="email" placeholder="leads@seudominio.com" value={s.remetente_email || ""} onChange={(e) => setS({ ...s, remetente_email: e.target.value })} />
+          <label className="mono mb-1.5 block text-[10px] uppercase tracking-widest text-[var(--ink-dim)]">Senha de Aplicativo (App Password) do Gmail</label>
+          <input className={campo} type="password" placeholder="abcd efgh ijkl mnop" value={s.resend_api_key || ""} onChange={(e) => setS({ ...s, resend_api_key: e.target.value })} />
+          <p className="mono mt-1.5 text-[10px] uppercase tracking-widest text-[var(--ink-faint)]">Gere em: Conta Google -&gt; Segurança -&gt; Verificação em 2 Etapas -&gt; Senhas de App</p>
         </div>
         <button onClick={salvar} className="btn-signal mono rounded-xl px-6 py-2.5 text-[11px] uppercase tracking-widest">
           {salvo ? "✓ transmitido" : "salvar"}

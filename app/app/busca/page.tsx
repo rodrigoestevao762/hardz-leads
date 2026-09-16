@@ -24,6 +24,20 @@ export default function BuscaPage() {
   const [salvos, setSalvos] = useState<Set<string>>(new Set());
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [checando, setChecando] = useState<string | null>(null);
+
+  async function checarRedes(emp: Empresa) {
+    setChecando(emp.osmId);
+    const res = await fetch("/api/enrich-search", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome: emp.nome, cidade: emp.cidade, pais: emp.pais }),
+    });
+    const json = await res.json();
+    setChecando(null);
+    if (res.ok && json.data) {
+      setResultados(resul => resul?.map(r => r.osmId === emp.osmId ? { ...r, ...json.data } : r) || null);
+    }
+  }
 
   async function buscar(e: React.FormEvent) {
     e.preventDefault();
@@ -109,10 +123,16 @@ export default function BuscaPage() {
                     {emp.email && <> · ✉ {emp.email}</>}
                   </p>
                 </div>
-                <button onClick={() => salvar(emp)} disabled={salvos.has(emp.osmId)}
-                  className="mono rounded-lg bg-[rgba(45,255,180,0.14)] px-4 py-2 text-[10px] uppercase tracking-widest text-[var(--signal)] shadow-[inset_0_0_0_1px_rgba(45,255,180,0.4)] transition hover:bg-[rgba(45,255,180,0.24)] disabled:opacity-60">
-                  {salvos.has(emp.osmId) ? "✓ travado" : "+ travar alvo"}
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={() => checarRedes(emp)} disabled={!!checando}
+                    className="btn-ghost mono rounded-lg px-3 py-2 text-[10px] uppercase tracking-widest text-[#e879f9] transition hover:bg-white/5 disabled:opacity-50">
+                    {checando === emp.osmId ? "buscando..." : "🔍 checar redes"}
+                  </button>
+                  <button onClick={() => salvar(emp)} disabled={salvos.has(emp.osmId)}
+                    className="mono rounded-lg bg-[rgba(45,255,180,0.14)] px-4 py-2 text-[10px] uppercase tracking-widest text-[var(--signal)] shadow-[inset_0_0_0_1px_rgba(45,255,180,0.4)] transition hover:bg-[rgba(45,255,180,0.24)] disabled:opacity-60">
+                    {salvos.has(emp.osmId) ? "✓ travado" : "+ travar alvo"}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
