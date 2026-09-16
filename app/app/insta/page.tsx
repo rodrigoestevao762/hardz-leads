@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
-import { Empresa } from "@/lib/qualificacao";
 
 type InstaResult = {
   osmId: string;

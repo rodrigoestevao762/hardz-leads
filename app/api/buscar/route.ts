@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { geocodificar, buscarEmpresas } from "@/lib/overpass";
+import { getCategoria, CATEGORIAS } from "@/lib/categorias";
 import { qualificar } from "@/lib/qualificacao";
-import { getCategoria } from "@/lib/categorias";
 import { usuarioObrigatorio } from "@/lib/supabase-server";
 
 export async function POST(req: Request) {
