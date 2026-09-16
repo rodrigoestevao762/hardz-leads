@@ -14,27 +14,36 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const router = useRouter();
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-slate-700/60 bg-[#111831]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
-          <Link href="/app" className="mr-4 font-bold">HardZ <span className="text-[#4f7cff]">Leads</span></Link>
+    <div className="bg-void min-h-screen">
+      <header className="sticky top-0 z-20 border-b border-[var(--line)] bg-[rgba(3,6,9,0.85)] backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center gap-1.5 px-4 py-3">
+          <Link href="/app" className="mr-5 flex items-center gap-2.5">
+            <span className="radar h-7 w-7"><span className="radar-sweep" /></span>
+            <span className="headline text-xs font-bold uppercase tracking-widest">
+              Prospectando<span className="text-signal-glow">AI</span>
+            </span>
+          </Link>
           {LINKS.map((l) => (
             <Link
               key={l.href} href={l.href}
-              className={`rounded-lg px-3 py-1.5 text-sm transition ${path === l.href ? "bg-[#4f7cff] text-white" : "text-slate-300 hover:bg-slate-700/40"}`}
+              className={`mono rounded-lg px-3 py-1.5 text-[11px] uppercase tracking-widest transition ${
+                path === l.href
+                  ? "bg-[rgba(45,255,180,0.12)] text-[var(--signal)] shadow-[inset_0_0_0_1px_rgba(45,255,180,0.35)]"
+                  : "text-[var(--ink-dim)] hover:bg-white/5 hover:text-[var(--ink)]"
+              }`}
             >
               {l.label}
             </Link>
           ))}
           <button
             onClick={async () => { await supabaseBrowser().auth.signOut(); router.push("/login"); }}
-            className="ml-auto rounded-lg px-3 py-1.5 text-sm text-slate-400 transition hover:bg-slate-700/40 hover:text-white"
+            className="mono ml-auto rounded-lg px-3 py-1.5 text-[11px] uppercase tracking-widest text-[var(--ink-faint)] transition hover:bg-white/5 hover:text-[var(--ink)]"
           >
             Sair
           </button>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-6xl px-4 py-7">{children}</main>
     </div>
   );
 }

@@ -1,12 +1,288 @@
 @import "tailwindcss";
 
+/* ============ PROSPECTANDO AI — Sistema de design "Sala de Controle Orbital" ============ */
+
 :root {
-  --bg: #0b1020;
-  --panel: #111831;
-  --accent: #4f7cff;
+  --void: #030609;
+  --deep: #060b12;
+  --panel: rgba(13, 23, 33, 0.72);
+  --panel-solid: #0a121b;
+  --line: rgba(94, 234, 183, 0.09);
+  --line-strong: rgba(94, 234, 183, 0.22);
+  --signal: #2dffb4;
+  --signal-dim: #1a9e70;
+  --amber: #ffb02d;
+  --alert: #ff5d5d;
+  --ink: #e8f2ec;
+  --ink-dim: #8ba39a;
+  --ink-faint: #55685f;
+  --font-display: var(--font-unbounded), sans-serif;
+  --font-body: var(--font-sora), sans-serif;
+  --font-mono: var(--font-plex-mono), monospace;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--bg);
-  color: #e5e9f5;
+  background: var(--void);
+  color: var(--ink);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--void);
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--deep); }
+::-webkit-scrollbar-thumb { background: #1c2f3a; border-radius: 8px; border: 2px solid var(--deep); }
+::-webkit-scrollbar-thumb:hover { background: var(--signal-dim); }
+
+/* ---------- Fundos atmosféricos ---------- */
+
+.bg-void {
+  background:
+    radial-gradient(1200px 700px at 75% -10%, rgba(45, 255, 180, 0.07), transparent 60%),
+    radial-gradient(900px 600px at -10% 40%, rgba(45, 130, 255, 0.05), transparent 55%),
+    radial-gradient(1400px 900px at 50% 120%, rgba(45, 255, 180, 0.04), transparent 60%),
+    var(--void);
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(94, 234, 183, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(94, 234, 183, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
+}
+
+.noise::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+}
+
+/* ---------- Painéis e bordas ---------- */
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(12px);
+}
+
+.panel-hover {
+  transition: border-color 0.35s ease, transform 0.35s ease, box-shadow 0.35s ease;
+}
+.panel-hover:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 50px -20px rgba(45, 255, 180, 0.18);
+}
+
+.glow-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--signal-dim), transparent);
+  opacity: 0.5;
+}
+
+/* ---------- Radar ---------- */
+
+.radar {
+  position: relative;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle, rgba(45, 255, 180, 0.06) 0%, transparent 70%),
+    repeating-radial-gradient(circle at center, transparent 0 39px, rgba(94, 234, 183, 0.14) 39px 40px);
+  border: 1px solid var(--line-strong);
+}
+.radar::before {
+  content: "";
+  position: absolute;
+  inset: 25%;
+  border-radius: 9999px;
+  border: 1px solid var(--line);
+}
+.radar::after {
+  content: "";
+  position: absolute;
+  inset: 45.5%;
+  border-radius: 9999px;
+  background: var(--signal);
+  box-shadow: 0 0 24px 4px rgba(45, 255, 180, 0.55);
+}
+
+.radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: conic-gradient(from 0deg, rgba(45, 255, 180, 0.35), rgba(45, 255, 180, 0.06) 55deg, transparent 90deg, transparent 360deg);
+  animation: sweep 5s linear infinite;
+  mask-image: radial-gradient(circle, black 0%, black 100%);
+}
+
+@keyframes sweep {
+  to { transform: rotate(360deg); }
+}
+
+.blip {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--signal);
+  box-shadow: 0 0 12px 2px rgba(45, 255, 180, 0.7);
+  animation: blip-pulse 5s ease-out infinite;
+}
+
+.blip.amber { background: var(--amber); box-shadow: 0 0 12px 2px rgba(255, 176, 45, 0.7); }
+
+@keyframes blip-pulse {
+  0%, 12% { opacity: 0; transform: scale(0.4); }
+  22% { opacity: 1; transform: scale(1.25); }
+  60% { opacity: 0.85; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+.crosshair-v, .crosshair-h {
+  position: absolute;
+  background: linear-gradient(90deg, transparent, rgba(94, 234, 183, 0.35), transparent);
+}
+
+/* ---------- Animações de entrada ---------- */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes rise {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.d1 { animation-delay: 0.08s; } .d2 { animation-delay: 0.2s; } .d3 { animation-delay: 0.34s; }
+.d4 { animation-delay: 0.5s; } .d5 { animation-delay: 0.66s; } .d6 { animation-delay: 0.82s; }
+
+/* ---------- Texto ---------- */
+
+.text-signal-glow {
+  color: var(--signal);
+  text-shadow: 0 0 32px rgba(45, 255, 180, 0.45);
+}
+
+.headline {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+  line-height: 1.04;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--signal);
+}
+
+.mono { font-family: var(--font-mono); }
+
+.outline-text {
+  -webkit-text-stroke: 1px rgba(139, 163, 154, 0.35);
+  color: transparent;
+}
+
+/* ---------- Ticker ---------- */
+
+.ticker-track {
+  display: flex;
+  gap: 3.5rem;
+  width: max-content;
+  animation: ticker 36s linear infinite;
+}
+
+@keyframes ticker {
+  to { transform: translateX(-50%); }
+}
+
+/* ---------- Botões ---------- */
+
+.btn-signal {
+  position: relative;
+  background: var(--signal);
+  color: var(--void);
+  font-weight: 700;
+  box-shadow: 0 0 0 1px rgba(45, 255, 180, 0.4), 0 12px 40px -12px rgba(45, 255, 180, 0.55);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.btn-signal:hover {
+  background: #5cffc9;
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px rgba(45, 255, 180, 0.6), 0 18px 50px -12px rgba(45, 255, 180, 0.7);
+}
+
+.btn-ghost {
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+}
+.btn-ghost:hover {
+  border-color: rgba(45, 255, 180, 0.5);
+  background: rgba(45, 255, 180, 0.06);
+  transform: translateY(-2px);
+}
+
+/* ---------- Formulários ---------- */
+
+.field {
+  background: rgba(4, 10, 15, 0.8);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.field::placeholder { color: var(--ink-faint); }
+.field:focus {
+  outline: none;
+  border-color: rgba(45, 255, 180, 0.55);
+  box-shadow: 0 0 0 3px rgba(45, 255, 180, 0.08);
+}
+.field option { background: var(--panel-solid); color: var(--ink); }
+
+/* ---------- Badges ---------- */
+
+.badge {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid;
+  border-radius: 9999px;
+  padding: 0.15rem 0.6rem;
+}
+
+/* ---------- Float decorativo ---------- */
+
+.float-slow { animation: floaty 7s ease-in-out infinite; }
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.pulse-dot {
+  width: 8px; height: 8px; border-radius: 9999px; background: var(--signal);
+  box-shadow: 0 0 0 0 rgba(45, 255, 180, 0.6);
+  animation: pulse-ring 2.2s ease-out infinite;
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(45, 255, 180, 0.5); }
+  70% { box-shadow: 0 0 0 10px rgba(45, 255, 180, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(45, 255, 180, 0); }
 }

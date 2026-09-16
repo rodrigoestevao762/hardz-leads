@@ -10,10 +10,10 @@ type Empresa = {
   endereco: string; score: number; nivel: "quente" | "morno" | "frio";
 };
 
-const NIVEL_COR: Record<Empresa["nivel"], string> = {
-  quente: "bg-red-500/15 text-red-400 border-red-500/40",
-  morno: "bg-amber-500/15 text-amber-400 border-amber-500/40",
-  frio: "bg-slate-500/15 text-slate-400 border-slate-500/40",
+const NIVEL_ESTILO: Record<Empresa["nivel"], string> = {
+  quente: "border-[var(--alert)]/50 bg-[var(--alert)]/10 text-[var(--alert)]",
+  morno: "border-[var(--amber)]/50 bg-[var(--amber)]/10 text-[var(--amber)]",
+  frio: "border-[var(--line-strong)] bg-white/5 text-[var(--ink-dim)]",
 };
 
 export default function BuscaPage() {
@@ -53,48 +53,65 @@ export default function BuscaPage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-bold">Buscar empresas</h1>
-      <form onSubmit={buscar} className="mb-6 flex flex-wrap gap-2">
+      <p className="eyebrow">Varredura global</p>
+      <h1 className="headline mt-2 text-2xl font-bold">Buscar empresas</h1>
+      <p className="mono mt-2 text-[11px] uppercase tracking-widest text-[var(--ink-faint)]">
+        qualquer cidade · qualquer país · dados ao vivo do openstreetmap
+      </p>
+
+      <form onSubmit={buscar} className="panel mt-6 flex flex-wrap gap-2 rounded-2xl p-3">
         <select value={categoria} onChange={(e) => setCategoria(e.target.value)}
-          className="rounded-lg border border-slate-600 bg-[#0b1020] px-3 py-2 text-sm">
+          className="field mono rounded-lg px-3 py-2 text-xs">
           {CATEGORIAS.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>
         <input required value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="Cidade (ex: Lisboa)"
-          className="min-w-44 flex-1 rounded-lg border border-slate-600 bg-[#0b1020] px-3 py-2 text-sm outline-none focus:border-[#4f7cff]" />
-        <input value={pais} onChange={(e) => setPais(e.target.value)} placeholder="País (opcional, ex: Portugal)"
-          className="min-w-36 rounded-lg border border-slate-600 bg-[#0b1020] px-3 py-2 text-sm outline-none focus:border-[#4f7cff]" />
+          className="field mono min-w-44 flex-1 rounded-lg px-3 py-2 text-xs" />
+        <input value={pais} onChange={(e) => setPais(e.target.value)} placeholder="País (opcional)"
+          className="field mono min-w-36 rounded-lg px-3 py-2 text-xs" />
         <button type="submit" disabled={carregando}
-          className="rounded-lg bg-[#4f7cff] px-5 py-2 font-semibold transition hover:bg-[#3d66e0] disabled:opacity-50">
-          {carregando ? "Buscando..." : "Buscar"}
+          className="btn-signal mono rounded-lg px-6 py-2 text-[11px] uppercase tracking-widest disabled:opacity-50">
+          {carregando ? "varrendo..." : "▶ varrer"}
         </button>
       </form>
 
-      {erro && <p className="mb-4 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{erro}</p>}
-      {carregando && <p className="py-10 text-center text-slate-400">Consultando OpenStreetMap... (pode levar até 20s)</p>}
+      {erro && (
+        <p className="mono mt-5 rounded-xl border border-[var(--alert)]/40 bg-[var(--alert)]/10 px-4 py-2.5 text-xs text-[var(--alert)]">
+          ▸ {erro}
+        </p>
+      )}
+      {carregando && (
+        <p className="mono py-16 text-center text-xs uppercase tracking-widest text-[var(--ink-faint)]">
+          <span className="pulse-dot mr-2 inline-block align-middle" /> consultando openstreetmap... (até 20s)
+        </p>
+      )}
 
       {resultados && (
         <>
-          <p className="mb-3 text-sm text-slate-400">{resultados.length} empresas encontradas — ordenadas por qualificação (melhores primeiro)</p>
-          <div className="flex flex-col gap-3">
+          <p className="mono mt-6 text-[11px] uppercase tracking-widest text-[var(--ink-dim)]">
+            ▸ {resultados.length} alvos detectados — melhores primeiro
+          </p>
+          <div className="mt-3 flex flex-col gap-3">
             {resultados.map((emp) => (
-              <div key={emp.osmId} className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-700/60 bg-[#111831] p-4">
+              <div key={emp.osmId} className="panel panel-hover flex flex-wrap items-center gap-2 rounded-2xl p-4">
                 <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="font-semibold">{emp.nome}</h2>
-                    <span className={`rounded-full border px-2 py-0.5 text-xs font-semibold ${NIVEL_COR[emp.nivel]}`}>{emp.nivel} · {emp.score}</span>
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    <h2 className="font-semibold tracking-tight">{emp.nome}</h2>
+                    <span className={`badge ${NIVEL_ESTILO[emp.nivel]}`}>
+                      {emp.nivel === "quente" ? "🔥" : emp.nivel === "morno" ? "◐" : "○"} {emp.nivel} · {emp.score}
+                    </span>
                   </div>
-                  <p className="mt-1 text-sm text-slate-400">
+                  <p className="mono mt-1.5 text-[11px] leading-relaxed text-[var(--ink-dim)]">
                     {emp.endereco || emp.cidade}
-                    {emp.telefone && <> · 📞 {emp.telefone}</>}
-                    {emp.website && <> · 🌐 <span className="text-slate-500">tem site</span></>}
-                    {!emp.website && <span className="text-emerald-400"> · 🌐 sem site ✓</span>}
-                    {emp.instagram && <> · 📷 {emp.instagram}</>}
-                    {emp.email && <> · ✉️ {emp.email}</>}
+                    {emp.telefone && <> · ☎ {emp.telefone}</>}
+                    {emp.website && <> · ▣ <span className="text-[var(--ink-faint)]">tem site</span></>}
+                    {!emp.website && <span className="font-semibold text-[var(--signal)]"> · ▣ sem site ✓</span>}
+                    {emp.instagram && <> · ◆ {emp.instagram}</>}
+                    {emp.email && <> · ✉ {emp.email}</>}
                   </p>
                 </div>
                 <button onClick={() => salvar(emp)} disabled={salvos.has(emp.osmId)}
-                  className="rounded-lg bg-[#4f7cff] px-4 py-2 text-sm font-medium transition hover:bg-[#3d66e0] disabled:bg-emerald-600 disabled:opacity-80">
-                  {salvos.has(emp.osmId) ? "✓ Salvo" : "+ Salvar"}
+                  className="mono rounded-lg bg-[rgba(45,255,180,0.14)] px-4 py-2 text-[10px] uppercase tracking-widest text-[var(--signal)] shadow-[inset_0_0_0_1px_rgba(45,255,180,0.4)] transition hover:bg-[rgba(45,255,180,0.24)] disabled:opacity-60">
+                  {salvos.has(emp.osmId) ? "✓ travado" : "+ travar alvo"}
                 </button>
               </div>
             ))}

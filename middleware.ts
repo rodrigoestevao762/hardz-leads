@@ -24,7 +24,8 @@ export async function middleware(request: NextRequest) {
   const { data } = await sb.auth.getUser();
   const path = request.nextUrl.pathname;
   const isAuthPage = path === "/login";
-  if (!data.user && !isAuthPage) {
+  const isPublic = path === "/";
+  if (!data.user && !isAuthPage && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

@@ -32,7 +32,7 @@ function esc(s: string) {
 export async function geocodificar(cidade: string, pais?: string): Promise<{ lat: number; lng: number; radiusM: number; paisNome: string } | null> {
   const q = pais ? `${cidade}, ${pais}` : cidade;
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`;
-  const res = await fetch(url, { headers: { "User-Agent": "HardZLeads/1.0 (prospeccao)" } });
+  const res = await fetch(url, { headers: { "User-Agent": "ProspectandoAI/1.0 (prospeccao)" } });
   if (!res.ok) return null;
   const data = await res.json();
   if (!data?.length) return null;
@@ -69,7 +69,7 @@ export async function buscarEmpresas(
   });
   const query = `[out:json][timeout:40];(${selectors.join("")});out center 120;`;
 
-  const UA = { "User-Agent": "HardZLeads/1.0 (prospeccao de empresas)" };
+  const UA = { "User-Agent": "ProspectandoAI/1.0 (prospeccao de empresas)" };
 
   // Tenta cada endpoint; em caso de erro de rede ou 5xx/429 passa para o próximo.
   let json: { elements?: any[] } | null = null;
