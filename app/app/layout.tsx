@@ -3,16 +3,14 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
-import { motion } from "framer-motion";
-import { Crosshair, Map, Radar, ScanSearch, Settings, Database, LogOut } from "lucide-react";
 
 const LINKS = [
-  { href: "/app",              label: "LEADS",          icon: <Database size={14} /> },
-  { href: "/app/busca",        label: "SEARCH",         icon: <ScanSearch size={14} /> },
-  { href: "/app/mapa",         label: "GLOBE",          icon: <Map size={14} /> },
-  { href: "/app/insta",        label: "OSINT_INSTA",    icon: <Radar size={14} /> },
-  { href: "/app/foods",        label: "OSINT_FOODS",    icon: <Crosshair size={14} /> },
-  { href: "/app/configuracoes",label: "CONFIG",         icon: <Settings size={14} /> },
+  { href: "/app",              label: "Leads",          icon: "⊕" },
+  { href: "/app/busca",        label: "Buscar",         icon: "⊙" },
+  { href: "/app/mapa",         label: "Mapa",           icon: "◎" },
+  { href: "/app/insta",        label: "Radar Insta",    icon: "◈" },
+  { href: "/app/foods",        label: "Radar Foods",    icon: "⊛" },
+  { href: "/app/configuracoes",label: "Config",         icon: "⊗" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -20,26 +18,40 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   return (
-    <div className="bg-void min-h-screen selection:bg-[var(--signal)] selection:text-black">
+    <div className="bg-void min-h-screen">
       {/* Ambient bg */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden opacity-30" style={{ zIndex: 0 }}>
-        <div className="aurora" />
-        <div className="scan-line" />
+      <div className="pointer-events-none fixed inset-0 overflow-hidden" style={{ zIndex: 0 }}>
+        <div className="aurora opacity-40" />
       </div>
 
       {/* HEADER */}
-      <header className="sticky top-0 z-30 border-b border-[var(--line)] bg-[var(--deep)]/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center gap-1 px-4 py-3">
+      <header className="sticky top-0 z-30 border-b border-[var(--line)]" style={{
+        background: "rgba(3, 6, 9, 0.82)",
+        backdropFilter: "blur(24px) saturate(180%)",
+        WebkitBackdropFilter: "blur(24px) saturate(180%)",
+      }}>
+        {/* Top scan accent */}
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[var(--signal)]/30 to-transparent" />
+
+        <div className="mx-auto flex max-w-7xl items-center gap-1 px-4 py-2.5">
           {/* Logo */}
-          <Link href="/app" className="mr-8 flex items-center gap-2 shrink-0">
-            <div className="h-2 w-2 rounded-full bg-[var(--signal)] animate-pulse" />
-            <span className="headline text-[12px] font-bold tracking-[0.2em] text-white">
-              PROSPECTANDO<span className="text-[var(--signal)]">AI</span>_
+          <Link href="/app" className="mr-6 flex items-center gap-2.5 shrink-0">
+            <div className="relative h-8 w-8">
+              <div className="radar h-full w-full" style={{ transform: "scale(1)" }}>
+                <div className="radar-sweep" />
+                <div className="crosshair-v" style={{ left: "50%", top: "10%", bottom: "10%", width: 1 }} />
+                <div className="crosshair-h" style={{ top: "50%", left: "10%", right: "10%", height: 1 }} />
+                <span className="blip" style={{ left: "30%", top: "35%", animationDelay: "1s", width: 4, height: 4 }} />
+                <span className="blip amber" style={{ left: "60%", top: "55%", animationDelay: "2.5s", width: 4, height: 4 }} />
+              </div>
+            </div>
+            <span className="headline text-[11px] font-bold uppercase tracking-[0.15em]">
+              Prospectando<span className="text-signal-glow">AI</span>
             </span>
           </Link>
 
           {/* Nav links */}
-          <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide">
+          <nav className="flex items-center gap-0.5 overflow-x-auto scrollbar-hide">
             {LINKS.map((l) => {
               const active = path === l.href;
               return (
@@ -48,8 +60,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   href={l.href}
                   className={`nav-link shrink-0 ${active ? "active" : ""}`}
                 >
-                  {l.icon}
+                  <span className="text-[10px]">{l.icon}</span>
                   <span>{l.label}</span>
+                  {active && <span className="tab-active" />}
                 </Link>
               );
             })}
@@ -58,9 +71,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {/* Signout */}
           <button
             onClick={async () => { await supabaseBrowser().auth.signOut(); router.push("/login"); }}
-            className="mono ml-auto flex shrink-0 items-center gap-2 rounded px-3 py-1.5 text-[10px] uppercase tracking-widest text-[var(--ink-faint)] transition hover:bg-[var(--alert)]/10 hover:text-[var(--alert)]"
+            className="mono ml-auto shrink-0 rounded-lg px-3 py-1.5 text-[10px] uppercase tracking-widest text-[var(--ink-faint)] transition hover:bg-[var(--alert)]/10 hover:text-[var(--alert)] border border-transparent hover:border-[var(--alert)]/30"
           >
-            <LogOut size={12} /> EXIT
+            Sair ×
           </button>
         </div>
       </header>

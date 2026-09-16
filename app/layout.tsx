@@ -1,37 +1,44 @@
 import type { Metadata } from "next";
-import { Chakra_Petch, Fira_Code, Orbitron } from "next/font/google";
+import { Unbounded, Space_Grotesk, JetBrains_Mono, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 
-const chakra = Chakra_Petch({
+const unbounded = Unbounded({
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-unbounded",
+  weight: ["400", "600", "700", "800"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-sora",
   weight: ["300", "400", "500", "600", "700"],
 });
 
-const firaCode = Fira_Code({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-mono",
-  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-plex-mono",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
 });
 
-const orbitron = Orbitron({
+const bebasNeue = Bebas_Neue({
   subsets: ["latin"],
-  variable: "--font-impact",
-  weight: ["400", "500", "700", "900"],
+  variable: "--font-bebas",
+  weight: ["400"],
 });
 
 export const metadata: Metadata = {
-  title: "ProspectandoAI — OSINT Terminal",
-  description: "Advanced B2B prospecting terminal. Global radar, OSINT capabilities, AI message generation.",
+  title: "ProspectandoAI — Radar global de leads sem site",
+  description:
+    "Encontre empresas em todo o mundo que ainda não têm site, qualifique automaticamente e gere mensagens personalizadas com IA no idioma de cada país.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
-      <body className={`${chakra.variable} ${firaCode.variable} ${orbitron.variable} noise`}>
+      <body className={`${unbounded.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} ${bebasNeue.variable} noise`}>
         {children}
       </body>
     </html>
   );
 }
-
