@@ -149,6 +149,7 @@ export default function MapaPage() {
         className="panel mb-4 flex flex-wrap gap-2 rounded-2xl p-3">
         <select value={cat} onChange={(e) => setCat(e.target.value)}
           className="field mono rounded-lg px-3 py-2 text-xs">
+          <option value="todos">Todos os Comércios</option>
           {CATEGORIAS.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>
         <input value={cidade} onChange={(e) => setCidade(e.target.value)} placeholder="Cidade (ex: Porto, Açailândia...)"

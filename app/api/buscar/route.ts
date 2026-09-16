@@ -9,15 +9,18 @@ export async function POST(req: Request) {
     await usuarioObrigatorio();
     const { categoria, cidade, pais } = await req.json();
     const cat = getCategoria(categoria);
-    if (!cat || !cidade) {
+    if (!cidade || (categoria !== "todos" && !cat)) {
       return NextResponse.json({ erro: "categoria e cidade obrigatórias" }, { status: 400 });
     }
     const geo = await geocodificar(cidade, pais || undefined);
     if (!geo) {
       return NextResponse.json({ erro: "cidade não encontrada" }, { status: 404 });
     }
+    const tags = cat
+      ? cat.tags
+      : Array.from(new Set(CATEGORIAS.flatMap((c) => c.tags)));
     const empresas = (await buscarEmpresas(
-      cat.id, cat.tags, geo.lat, geo.lng, geo.radiusM, cidade, geo.paisNome
+      cat?.id || "todos", tags, geo.lat, geo.lng, geo.radiusM, cidade, geo.paisNome
     )).map((e) => {
       const q = qualificar({ website: e.website, instagram: e.instagram, email: e.email, telefone: e.telefone, endereco: e.endereco });
       return { ...e, score: q.score, nivel: q.nivel };
