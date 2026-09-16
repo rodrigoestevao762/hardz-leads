@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
-import { buildLandingHTML, textosPadrao, type DadosLanding, type TextosLanding } from "@/lib/landing";
+import { buildLandingHTML, type DadosLanding, type TextosLanding } from "@/lib/landing";
 
 type Lead = {
   nome: string; categoria: string; cidade: string; pais: string;
@@ -37,29 +37,15 @@ export default function EditorLanding() {
   const [textos, setTextos] = useState<TextosLanding | null>(null);
   const [accent, setAccent] = useState("#c9974c");
   const [tema, setTema] = useState<"escuro" | "claro">("escuro");
+  const [srcDoc, setSrcDoc] = useState("");
   const [estado, setEstado] = useState<"carregando" | "sem-landing" | "pronto">("carregando");
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [salvo, setSalvo] = useState(false);
 
-  const carregar = useCallback(async () => {
-    setEstado("carregando");
-    const sb = supabaseBrowser();
-    const { data: l } = await sb.from("leads").select("*").eq("id", leadId).single();
-    if (!l) { setEstado("sem-landing"); return; }
-    setLead(l as Lead);
-    const { data: landing } = await sb.from("landings").select("*").eq("lead_id", leadId).single();
-    if (landing?.textos && Object.keys(landing.textos).length > 0) {
-      setTextos(landing.textos as TextosLanding);
-      setAccent(landing.accent || "#c9974c");
-      setTema(landing.tema || "escuro");
-      setEstado("pronto");
-    } else {
-      setEstado("sem-landing");
-    }
-  }, [leadId]);
-
-  useEffect(() => { carregar(); }, [carregar]);
+  // refs para os handlers dentro do iframe lerem o valor mais recente
+  const textosRef = useRef<TextosLanding | null>(null);
+  textosRef.current = textos;
 
   const dados: DadosLanding | null = lead
     ? {
@@ -73,12 +59,44 @@ export default function EditorLanding() {
       }
     : null;
 
-  const html = dados && textos ? buildLandingHTML(dados, textos, accent, tema) : "";
+  const reconstruir = useCallback(
+    (t: TextosLanding, a: string, tm: "escuro" | "claro", d: DadosLanding) => {
+      setSrcDoc(buildLandingHTML(d, t, a, tm));
+    },
+    []
+  );
 
-  // habilita edição inline dentro do iframe
+  const carregar = useCallback(async () => {
+    setEstado("carregando");
+    const sb = supabaseBrowser();
+    const { data: l } = await sb.from("leads").select("*").eq("id", leadId).single();
+    if (!l) { setEstado("sem-landing"); return; }
+    const ld = l as Lead;
+    setLead(ld);
+    const { data: landing } = await sb.from("landings").select("*").eq("lead_id", leadId).single();
+    if (landing?.textos && Object.keys(landing.textos).length > 0) {
+      const t = landing.textos as TextosLanding;
+      const a = landing.accent || "#c9974c";
+      const tm = (landing.tema === "claro" ? "claro" : "escuro") as "escuro" | "claro";
+      setTextos(t);
+      setAccent(a);
+      setTema(tm);
+      reconstruir(
+        t, a, tm,
+        { nome: ld.nome, categoriaLabel: ld.categoria, cidade: ld.cidade, telefone: ld.telefone, email: ld.email, instagram: ld.instagram, endereco: ld.endereco }
+      );
+      setEstado("pronto");
+    } else {
+      setEstado("sem-landing");
+    }
+  }, [leadId, reconstruir]);
+
+  useEffect(() => { carregar(); }, [carregar]);
+
+  // habilita edição inline dentro do iframe (uma vez por carga do documento)
   useEffect(() => {
     const iframe = iframeRef.current;
-    if (!iframe || !html) return;
+    if (!iframe || !srcDoc) return;
     const aoCarregar = () => {
       const doc = iframe.contentDocument;
       if (!doc) return;
@@ -90,15 +108,16 @@ export default function EditorLanding() {
         if (!alvo) return;
         const caminho = alvo.getAttribute("data-campo");
         const novo = (alvo.textContent || "").trim();
-        if (!caminho || !textos) return;
-        const atual = caminho.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], textos);
-        if (atual !== novo) setTextos((t) => (t ? setarProfundo(t, caminho, novo) : t));
+        const t = textosRef.current;
+        if (!caminho || !t) return;
+        const atual = caminho.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown>)?.[k], t);
+        if (atual !== novo) setTextos(setarProfundo(t, caminho, novo));
       });
     };
     iframe.addEventListener("load", aoCarregar);
     if (iframe.contentDocument?.readyState === "complete") aoCarregar();
     return () => iframe.removeEventListener("load", aoCarregar);
-  }, [html, textos]);
+  }, [srcDoc]);
 
   async function gerar() {
     setOcupado("gerar"); setAviso(null);
@@ -108,7 +127,9 @@ export default function EditorLanding() {
     const json = await res.json();
     setOcupado(null);
     if (!res.ok) return setAviso("Erro: " + json.erro);
-    setTextos(json.textos);
+    const t = json.textos as TextosLanding;
+    setTextos(t);
+    if (dados) reconstruir(t, accent, tema, dados);
     setEstado("pronto");
   }
 
@@ -127,6 +148,8 @@ export default function EditorLanding() {
   }
 
   function baixar() {
+    if (!textos || !dados) return;
+    const html = buildLandingHTML(dados, textos, accent, tema);
     const blob = new Blob([html], { type: "text/html" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -134,6 +157,16 @@ export default function EditorLanding() {
     a.download = `landing-${(lead?.nome || "lead").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.html`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  function trocarCor(v: string) {
+    setAccent(v);
+    if (textos && dados) reconstruir(textos, v, tema, dados);
+  }
+
+  function trocarTema(v: "escuro" | "claro") {
+    setTema(v);
+    if (textos && dados) reconstruir(textos, accent, v, dados);
   }
 
   if (estado === "carregando") {
@@ -175,11 +208,11 @@ export default function EditorLanding() {
 
         <label className="mono flex items-center gap-2 text-[10px] uppercase tracking-widest text-[var(--ink-dim)]">
           Cor
-          <input type="color" value={accent} onChange={(e) => setAccent(e.target.value)}
+          <input type="color" value={accent} onChange={(e) => trocarCor(e.target.value)}
             className="h-8 w-10 cursor-pointer rounded border border-[var(--line)] bg-transparent" />
         </label>
 
-        <select value={tema} onChange={(e) => setTema(e.target.value as "escuro" | "claro")}
+        <select value={tema} onChange={(e) => trocarTema(e.target.value as "escuro" | "claro")}
           className="field mono rounded-lg px-2.5 py-1.5 text-xs">
           <option value="escuro">Tema escuro</option>
           <option value="claro">Tema claro</option>
@@ -213,7 +246,7 @@ export default function EditorLanding() {
 
       {/* Preview */}
       <div className="overflow-hidden rounded-2xl border border-[var(--line)]">
-        <iframe ref={iframeRef} srcDoc={html} title="Pré-visualização da landing"
+        <iframe ref={iframeRef} srcDoc={srcDoc} title="Pré-visualização da landing"
           sandbox="allow-same-origin"
           className="h-[78vh] w-full bg-white" />
       </div>
