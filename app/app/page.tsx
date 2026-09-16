@@ -149,14 +149,25 @@ export default function LeadsPage() {
   }
 
   async function enriquecerEmLote() {
-    const leadsParaEnriquecer = visiveis.filter(l => !l.instagram && !l.email && !l.enriquecido_em).slice(0, 5); // enriquecendo 5 por vez
-    if (leadsParaEnriquecer.length === 0) return setAviso("Nenhum lead visível precisa de enriquecimento.");
+    const semInsta = visiveis.filter(l => !l.instagram && !l.email && !l.enriquecido_em);
+    if (semInsta.length === 0) return setAviso("Nenhum lead visível precisa de enriquecimento.");
+    if (!confirm(`Deseja acionar a IA para vasculhar a internet atrás dos contatos de ${semInsta.length} leads simultaneamente?`)) return;
     
-    setAviso(`Enriquecendo ${leadsParaEnriquecer.length} leads...`);
-    for (const l of leadsParaEnriquecer) {
-      await enriquecerLead(l);
+    let sucessos = 0;
+    const batchSize = 10; // Process 10 at a time in parallel
+    for (let i = 0; i < semInsta.length; i += batchSize) {
+      const lote = semInsta.slice(i, i + batchSize);
+      setAviso(`Enriquecendo lote... (${Math.min(i + batchSize, semInsta.length)}/${semInsta.length})`);
+      
+      await Promise.all(lote.map(async (l) => {
+        setOcupado(l.id + ":enriquecer");
+        await enriquecerLead(l);
+      }));
+      sucessos += lote.length;
     }
-    setAviso(`Enriquecimento em lote concluído!`);
+    
+    setOcupado(null);
+    setAviso(`Enriquecimento turbo concluído para ${sucessos} leads!`);
   }
 
   async function excluirLead(id: string) {
