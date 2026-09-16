@@ -66,6 +66,30 @@ export default function BuscaPage() {
     else if (error) setErro(error.code === "23505" ? `${emp.nome} já está salvo` : error.message);
   }
 
+  async function salvarTodos() {
+    if (!resultados) return;
+    const lista = somenteInstagram ? resultados.filter(e => e.instagram) : resultados;
+    const naoSalvos = lista.filter(e => !salvos.has(e.osmId));
+    if (naoSalvos.length === 0) return;
+    
+    setCarregando(true);
+    const sb = supabaseBrowser();
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) return setCarregando(false);
+    
+    for (const emp of naoSalvos) {
+      const { error } = await sb.from("leads").insert({
+        user_id: user.id, nome: emp.nome, categoria: emp.categoria, cidade: emp.cidade, pais: emp.pais,
+        telefone: emp.telefone, website: emp.website, instagram: emp.instagram, email: emp.email,
+        fonte: "osm", osm_id: emp.osmId, score: emp.score, nivel: emp.nivel,
+      });
+      if (!error || error.code === "23505") {
+        setSalvos(s => new Set(s).add(emp.osmId));
+      }
+    }
+    setCarregando(false);
+  }
+
   return (
     <div>
       <p className="eyebrow">Varredura global</p>
@@ -106,10 +130,16 @@ export default function BuscaPage() {
             <p className="mono text-[11px] uppercase tracking-widest text-[var(--ink-dim)]">
               · {somenteInstagram ? resultados.filter(e => e.instagram).length : resultados.length} alvos detectados — melhores primeiro
             </p>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={somenteInstagram} onChange={(e) => setSomenteInstagram(e.target.checked)} className="accent-[var(--signal)]" />
-              <span className="mono text-[10px] uppercase tracking-widest text-[#e879f9]">só com Instagram</span>
-            </label>
+            <div className="flex gap-4 items-center">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={somenteInstagram} onChange={(e) => setSomenteInstagram(e.target.checked)} className="accent-[var(--signal)]" />
+                <span className="mono text-[10px] uppercase tracking-widest text-[#e879f9]">só com Instagram</span>
+              </label>
+              <button onClick={salvarTodos} disabled={carregando || (somenteInstagram ? resultados.filter(e => e.instagram) : resultados).every(e => salvos.has(e.osmId))}
+                className="btn-signal mono rounded-lg px-4 py-1.5 text-[10px] uppercase tracking-widest disabled:opacity-50">
+                + salvar todos
+              </button>
+            </div>
           </div>
           <div className="mt-3 flex flex-col gap-3">
             {(somenteInstagram ? resultados.filter(e => e.instagram) : resultados).map((emp) => (
