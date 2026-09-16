@@ -132,7 +132,13 @@ export default function LeadsPage() {
     } else {
       navigator.clipboard.writeText(msgAberta[l.id]);
     }
-    window.open(`https://ig.me/m/${l.instagram.replace("@", "")}`, "_blank");
+
+    let username = l.instagram.trim().replace("@", "");
+    if (username.includes("instagram.com/")) {
+      username = username.split("instagram.com/")[1].split("/")[0].split("?")[0];
+    }
+    
+    window.open(`https://ig.me/m/${username}`, "_blank");
     atualizar(l.id, { status: "enviado", canal: "dm" });
   }
 
