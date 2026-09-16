@@ -1,14 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Função auxiliar para fazer o fetch com timeout e headers que disfarçam o bot
+// Proxy via Google Translate para burlar os bloqueios de IP da Vercel
 async function fetchHtml(url: string): Promise<string> {
   try {
-    const res = await fetch(url, {
+    const proxyUrl = `https://translate.google.com/translate?sl=en&tl=es&u=${encodeURIComponent(url)}`;
+    const res = await fetch(proxyUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
-      signal: AbortSignal.timeout(8000) // 8 seg de limite
+      signal: AbortSignal.timeout(6000)
     });
     return await res.text();
   } catch (err) {
@@ -16,17 +17,16 @@ async function fetchHtml(url: string): Promise<string> {
   }
 }
 
-// 3 Motores de Busca Diferentes (Estratégia OSINT)
-async function searchYahoo(query: string): Promise<string> {
-  return await fetchHtml(`https://search.yahoo.com/search?p=${encodeURIComponent(query)}`);
+async function searchDuckDuckGo(query: string): Promise<string> {
+  return await fetchHtml(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`);
 }
 
 async function searchBing(query: string): Promise<string> {
   return await fetchHtml(`https://www.bing.com/search?q=${encodeURIComponent(query)}`);
 }
 
-async function searchDuckDuckGo(query: string): Promise<string> {
-  return await fetchHtml(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`);
+async function searchYahoo(query: string): Promise<string> {
+  return await fetchHtml(`https://search.yahoo.com/search?p=${encodeURIComponent(query)}`);
 }
 
 function extractSocialLinks(html: string) {
