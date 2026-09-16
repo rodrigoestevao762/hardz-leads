@@ -86,3 +86,49 @@ export async function enrichLeadData(nome: string, cidade: string, uf: string = 
     fontes: fontesUsadas,
   };
 }
+
+export async function radarInstagram(nicho: string, cidade: string) {
+  const query = `${nicho} ${cidade} site:instagram.com`.trim();
+  
+  const [htmlBing, htmlDuck, htmlYahoo] = await Promise.all([
+    searchBing(query),
+    searchDuckDuckGo(query),
+    searchYahoo(query)
+  ]);
+  
+  const htmlUnificado = htmlBing + " " + htmlDuck + " " + htmlYahoo;
+  
+  const instaMatches = htmlUnificado.match(/instagram\.com\/([A-Za-z0-9_.]+)/gi) || [];
+  
+  const ignorar = ['/p/', '/reel/', '/explore/', '/stories/', '/tags/', '/directory/', '/developer/', '/about/', '/legal/'];
+  const usernames = new Set<string>();
+  
+  for (const match of instaMatches) {
+    if (ignorar.some(i => match.includes(i))) continue;
+    const parts = match.split('/');
+    let user = parts[1]?.toLowerCase().trim();
+    if (user && user.endsWith('.')) user = user.slice(0, -1);
+    
+    if (user && user.length > 2 && user !== "instagram" && user !== "p") {
+      usernames.add(user);
+    }
+  }
+  
+  return Array.from(usernames).map(user => {
+    const nomeFormatado = user.replace(/[._]/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+    return {
+      osmId: "insta_" + user,
+      nome: nomeFormatado,
+      categoria: nicho || "Instagram",
+      cidade: cidade || "Global",
+      pais: "",
+      telefone: null,
+      website: null,
+      email: null,
+      instagram: `https://www.instagram.com/${user}`,
+      fonte: "instagram",
+      score: 50,
+      nivel: "morno"
+    };
+  });
+}
