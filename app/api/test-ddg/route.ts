@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   try {
-    const res = await fetch(`https://search.brave.com/search?q=barbearia+sao+paulo+site:instagram.com`, {
+    const res = await fetch(`https://www.ask.com/web?q=pizzaria+sao+paulo+site:instagram.com`, {
       headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36" },
       cache: "no-store"
     });
