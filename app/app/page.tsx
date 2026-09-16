@@ -211,6 +211,26 @@ export default function LeadsPage() {
     setAviso(`Disparo concluído: ${sucessos} e-mails enviados.`);
   }
 
+  async function limparTodos() {
+    const sb = supabaseBrowser();
+    if (visiveis.length === 0) return setAviso("Nenhum lead visível para excluir.");
+    
+    // Confirmação extra para evitar acidentes
+    if (!confirm(`⚠️ ATENÇÃO: Você está prestes a EXCLUIR DEFINITIVAMENTE ${visiveis.length} leads da tela atual.\n\nTem certeza absoluta?`)) return;
+    
+    setAviso(`Excluindo ${visiveis.length} leads...`);
+    const ids = visiveis.map(l => l.id);
+    
+    // Delete in batches of 50 to avoid URL too long issues if there are many
+    for (let i = 0; i < ids.length; i += 50) {
+      const lote = ids.slice(i, i + 50);
+      await sb.from("leads").delete().in("id", lote);
+    }
+    
+    setLeads((ls) => ls.filter((l) => !ids.includes(l.id)));
+    setAviso(`${visiveis.length} leads excluídos com sucesso.`);
+  }
+
   const contagem = {
     quente: visiveis.filter((l) => l.nivel === "quente").length,
     morno: visiveis.filter((l) => l.nivel === "morno").length,
@@ -268,6 +288,9 @@ export default function LeadsPage() {
         </button>
         <button onClick={limparSemRedes} disabled={!!ocupado} className="button bg-[var(--alert)]/10 text-[var(--alert)] rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_var(--alert)] hover:bg-[var(--alert)]/20 disabled:opacity-50">
           Limpar s/ Insta
+        </button>
+        <button onClick={limparTodos} disabled={!!ocupado} className="button bg-black text-white rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] hover:bg-white/10 disabled:opacity-50 transition">
+          ⚠️ Limpar Tudo
         </button>
       </div>
 
