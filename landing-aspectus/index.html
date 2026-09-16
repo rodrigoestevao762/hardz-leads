@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aspectus — Male Image | Barbearia em Lisboa</title>
+<meta name="description" content="Barbearia premium em Lisboa. Corte, barba e tratamento masculino com marcação online. Avenida António Augusto Aguiar 14, Lisboa.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,700&family=Archivo:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #12100d;
+    --coal: #1a1713;
+    --coal-2: #221e18;
+    --cream: #f2ead9;
+    --cream-dim: #b5ab97;
+    --brass: #c9974c;
+    --brass-bright: #e8b96a;
+    --line: rgba(201, 151, 76, 0.22);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--coal);
+    color: var(--cream);
+    font-family: 'Archivo', sans-serif;
+    font-weight: 300;
+    overflow-x: hidden;
+  }
+  ::selection { background: var(--brass); color: var(--ink); }
+
+  h1, h2, h3, .serif { font-family: 'Fraunces', serif; }
+
+  /* ---------- topo ---------- */
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 26px 6vw;
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(26, 23, 19, 0.92); backdrop-filter: blur(10px);
+  }
+  .logo { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.15rem; letter-spacing: 0.04em; }
+  .logo em { color: var(--brass); font-style: normal; }
+  .topbar nav { display: flex; gap: 34px; }
+  .topbar nav a {
+    color: var(--cream-dim); text-decoration: none;
+    font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
+    transition: color .3s;
+  }
+  .topbar nav a:hover { color: var(--brass-bright); }
+  .cta-top {
+    color: var(--ink) !important; background: var(--brass);
+    padding: 10px 22px; border-radius: 2px; font-weight: 600;
+  }
+  .cta-top:hover { background: var(--brass-bright); }
+  @media (max-width: 760px) { .topbar nav { display: none; } }
+
+  /* ---------- hero ---------- */
+  .hero {
+    min-height: 92vh; display: grid; place-items: center; text-align: center;
+    position: relative; padding: 60px 6vw;
+    background:
+      radial-gradient(900px 500px at 50% -10%, rgba(201, 151, 76, 0.12), transparent 65%),
+      linear-gradient(180deg, var(--coal) 0%, var(--ink) 100%);
+  }
+  .hero::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cpath d='M60 30v60M30 60h60' stroke='%23c9974c' stroke-opacity='0.05'/%3E%3C/svg%3E");
+  }
+  .hero-frame {
+    position: relative; padding: 70px 8vw; max-width: 880px;
+    border: 1px solid var(--line);
+  }
+  .hero-frame::before, .hero-frame::after {
+    content: ""; position: absolute; width: 34px; height: 34px;
+    border: 1px solid var(--brass);
+  }
+  .hero-frame::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+  .hero-frame::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+  .eyebrow {
+    font-size: 0.68rem; letter-spacing: 0.5em; text-transform: uppercase;
+    color: var(--brass); margin-bottom: 28px;
+  }
+  .hero h1 {
+    font-size: clamp(2.6rem, 7vw, 5rem); font-weight: 300; line-height: 1.08;
+    letter-spacing: -0.01em;
+  }
+  .hero h1 strong { font-weight: 600; color: var(--brass-bright); }
+  .hero p {
+    margin-top: 26px; color: var(--cream-dim);
+    font-size: 1.02rem; line-height: 1.8; max-width: 520px; margin-inline: auto;
+  }
+  .hero-acoes { margin-top: 42px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; text-decoration: none; padding: 15px 34px;
+    font-size: 0.74rem; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 500;
+    transition: all .3s;
+  }
+  .btn-brass { background: var(--brass); color: var(--ink); }
+  .btn-brass:hover { background: var(--brass-bright); transform: translateY(-2px); }
+  .btn-linha { border: 1px solid var(--line); color: var(--cream); }
+  .btn-linha:hover { border-color: var(--brass); color: var(--brass-bright); }
+  .hero-meta {
+    margin-top: 46px; display: flex; gap: 40px; justify-content: center; flex-wrap: wrap;
+    color: var(--cream-dim); font-size: 0.8rem;
+  }
+  .hero-meta span b { color: var(--brass); font-weight: 500; }
+
+  /* ---------- secções ---------- */
+  section { padding: 100px 6vw; }
+  .cabeca { text-align: center; margin-bottom: 70px; }
+  .cabeca h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 400; }
+  .cabeca h2 em { color: var(--brass); font-style: italic; }
+  .cabeca .traco { width: 56px; height: 1px; background: var(--brass); margin: 22px auto 0; opacity: .7; }
+
+  /* serviços */
+  .servicos { background: var(--ink); }
+  .grelha { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1px; background: var(--line); max-width: 1100px; margin: 0 auto; }
+  .servico { background: var(--ink); padding: 48px 34px; text-align: center; transition: background .35s; }
+  .servico:hover { background: var(--coal-2); }
+  .servico .n { font-family: 'Fraunces', serif; color: var(--brass); font-size: .85rem; letter-spacing: .3em; }
+  .servico h3 { margin: 18px 0 12px; font-size: 1.3rem; font-weight: 400; }
+  .servico p { color: var(--cream-dim); font-size: .9rem; line-height: 1.75; }
+  .servico .preco { display: block; margin-top: 20px; color: var(--brass-bright); font-family: 'Fraunces', serif; font-size: 1.05rem; }
+
+  /* experiência */
+  .exp { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; align-items: center; max-width: 1100px; margin: 0 auto; }
+  @media (max-width: 860px) { .exp { grid-template-columns: 1fr; } }
+  .exp-visual {
+    aspect-ratio: 4/5; border: 1px solid var(--line); position: relative; overflow: hidden;
+    background:
+      radial-gradient(400px 300px at 30% 20%, rgba(201,151,76,.16), transparent 60%),
+      radial-gradient(500px 400px at 75% 80%, rgba(201,151,76,.09), transparent 55%),
+      linear-gradient(160deg, var(--coal-2), var(--ink));
+  }
+  .exp-visual .tesoura {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    font-family: 'Fraunces', serif; font-size: clamp(4rem, 9vw, 7rem);
+    color: var(--brass); opacity: .28; font-style: italic;
+  }
+  .exp-visual .etiqueta {
+    position: absolute; bottom: 26px; left: 26px; right: 26px;
+    border-top: 1px solid var(--line); padding-top: 16px;
+    font-size: .7rem; letter-spacing: .3em; text-transform: uppercase; color: var(--cream-dim);
+  }
+  .exp-texto h2 { font-size: clamp(1.7rem, 3.5vw, 2.5rem); font-weight: 400; line-height: 1.25; }
+  .exp-texto h2 em { color: var(--brass); font-style: italic; }
+  .exp-texto > p { margin-top: 24px; color: var(--cream-dim); line-height: 1.9; }
+  .lista { margin-top: 34px; display: grid; gap: 16px; }
+  .lista div { display: flex; gap: 16px; align-items: baseline; }
+  .lista .ponto { color: var(--brass); font-size: .8rem; }
+  .lista b { font-weight: 500; }
+  .lista span { color: var(--cream-dim); font-size: .92rem; }
+
+  /* marcar */
+  .marcar { text-align: center; background: linear-gradient(180deg, var(--ink), var(--coal)); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .marcar h2 { font-size: clamp(2rem, 5vw, 3.4rem); font-weight: 300; }
+  .marcar h2 strong { color: var(--brass-bright); font-weight: 600; }
+  .marcar p { margin-top: 20px; color: var(--cream-dim); }
+  .marcar .hero-acoes { margin-top: 38px; }
+
+  /* rodapé */
+  footer { padding: 70px 6vw 40px; text-align: center; }
+  footer .logo { font-size: 1.4rem; }
+  .contactos { margin-top: 30px; display: flex; justify-content: center; gap: 46px; flex-wrap: wrap; }
+  .contactos a { color: var(--cream-dim); text-decoration: none; font-size: .86rem; transition: color .3s; }
+  .contactos a:hover { color: var(--brass-bright); }
+  .contactos a b { display: block; color: var(--brass); font-size: .62rem; letter-spacing: .3em; text-transform: uppercase; margin-bottom: 8px; font-weight: 500; }
+  .fim { margin-top: 50px; color: #5a5245; font-size: .68rem; letter-spacing: .2em; text-transform: uppercase; }
+
+  /* animações */
+  .surge { opacity: 0; transform: translateY(28px); animation: surge 1s cubic-bezier(.16,1,.3,1) forwards; }
+  .d1 { animation-delay: .1s } .d2 { animation-delay: .25s } .d3 { animation-delay: .4s }
+  .d4 { animation-delay: .55s } .d5 { animation-delay: .7s }
+  @keyframes surge { to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">Aspectus <em>·</em> Male Image</div>
+  <nav>
+    <a href="#servicos">Serviços</a>
+    <a href="#experiencia">Experiência</a>
+    <a href="#marcar" class="cta-top">Marcar</a>
+  </nav>
+  <a href="#marcar" class="cta-top" style="display:none"></a>
+</div>
+
+<header class="hero">
+  <div class="hero-frame">
+    <p class="eyebrow surge d1">Barbearia · Lisboa</p>
+    <h1 class="surge d2">O seu corte diz<br><strong>quem é.</strong></h1>
+    <p class="surge d3">Na Avenida António Augusto Aguiar, a Aspectus é o ponto de encontro do homem que cuida da imagem — corte, barba e tratamento num só lugar, sem espera e sem pressa.</p>
+    <div class="hero-acoes surge d4">
+      <a class="btn btn-brass" href="tel:+351211353846">Marcar por telefone</a>
+      <a class="btn btn-linha" href="#servicos">Ver serviços</a>
+    </div>
+    <div class="hero-meta surge d5">
+      <span><b>—</b> Av. António Augusto Aguiar 14, Lisboa</span>
+      <span><b>+351</b> 211 353 846</span>
+    </div>
+  </div>
+</header>
+
+<section class="servicos" id="servicos">
+  <div class="cabeca">
+    <h2>Serviços de <em>homem para homem</em></h2>
+    <div class="traco"></div>
+  </div>
+  <div class="grelha">
+    <div class="servico">
+      <span class="n">01</span>
+      <h3>Corte Signature</h3>
+      <p>Consulta de formato, corte à tesoura e máquina, finalização com produtos de Styling profissional.</p>
+      <span class="preco">desde 18 €</span>
+    </div>
+    <div class="servico">
+      <span class="n">02</span>
+      <h3>Barba Real</h3>
+      <p>Toalha quente, navalha, contorno à régua e hidratação com óleos. A barba como deve ser.</p>
+      <span class="preco">desde 14 €</span>
+    </div>
+    <div class="servico">
+      <span class="n">03</span>
+      <h3>Corte + Barba</h3>
+      <p>O combo completo: sai da cadeira com a imagem renovada de topo a fundo, num só horário.</p>
+      <span class="preco">desde 28 €</span>
+    </div>
+    <div class="servico">
+      <span class="n">04</span>
+      <h3>Treatment Male</h3>
+      <p>Escalda e massagem capilar, tratamento anticaspa e aconselhamento de imagem personalizado.</p>
+      <span class="preco">sob consulta</span>
+    </div>
+  </div>
+</section>
+
+<section id="experiencia">
+  <div class="exp">
+    <div class="exp-visual surge d1">
+      <span class="tesoura">✂</span>
+      <span class="etiqueta">Interior Aspectus · Av. da Liberdade, 5 min a pé</span>
+    </div>
+    <div class="exp-texto">
+      <h2 class="surge d2">Mais do que uma barbearia — <em>um ritual.</em></h2>
+      <p class="surge d3">Cadeiras confortáveis, café ao molho e uma equipa que conhece o seu corte pelo nome. Aqui, marcar é rápido e o resultado é sempre igual — ao bom.</p>
+      <div class="lista surge d4">
+        <div><span class="ponto">◆</span><div><b>Marcação pontual</b><br><span>Chega, senta-se e é atendido à hora. Zero filas.</span></div></div>
+        <div><span class="ponto">◆</span><div><b>Equipa fixa</b><br><span>Os mesmos profissionais, sempre o mesmo padrão.</span></div></div>
+        <div><span class="ponto">◆</span><div><b>Produtos de eleição</b><br><span>Linhas profissionais para o cabelo e a barba.</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="marcar" id="marcar">
+  <p class="eyebrow surge d1">Reserva o seu horário</p>
+  <h2 class="surge d2">A sua próxima imagem<br><strong>começa aqui.</strong></h2>
+  <p class="surge d3">Ligue, envie-nos mensagem ou passe pela Avenida. Temos lugar para si esta semana.</p>
+  <div class="hero-acoes surge d4">
+    <a class="btn btn-brass" href="tel:+351211353846">Ligar: 211 353 846</a>
+    <a class="btn btn-linha" href="mailto:geral@twodots.pt?subject=Marcação — Aspectus Male Image">Enviar e-mail</a>
+  </div>
+</section>
+
+<footer>
+  <div class="logo">Aspectus <em>·</em> Male Image</div>
+  <div class="contactos">
+    <a href="tel:+351211353846"><b>Telefone</b>+351 211 353 846</a>
+    <a href="mailto:geral@twodots.pt"><b>E-mail</b>geral@twodots.pt</a>
+    <a href="https://maps.google.com/?q=Av.+António+Augusto+Aguiar+14+Lisboa" target="_blank" rel="noopener"><b>Morada</b>Av. António Augusto Aguiar 14, Lisboa</a>
+  </div>
+  <p class="fim">© 2026 Aspectus Male Image · Lisboa</p>
+</footer>
+
+</body>
+</html>
