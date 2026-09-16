@@ -20,12 +20,15 @@ async function searchWeb(query: string): Promise<string> {
 function extractSocialLinks(html: string) {
   const instagramMatch = html.match(/https?:\/\/(www\.)?instagram\.com\/[A-Za-z0-9_.]+/i);
   const facebookMatch = html.match(/https?:\/\/(www\.)?facebook\.com\/[A-Za-z0-9_.-]+/i);
-  const emailMatch = html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  const emailMatches = html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
   
+  // Filtra e-mails de erro internos do DuckDuckGo ou Sentry
+  const emailValido = emailMatches.find(e => !e.includes("duckduckgo.com") && !e.includes("sentry") && !e.includes("example.com"));
+
   return {
     instagram: instagramMatch ? instagramMatch[0] : null,
     facebook: facebookMatch ? facebookMatch[0] : null,
-    email: emailMatch ? emailMatch[0] : null,
+    email: emailValido || null,
   };
 }
 

@@ -181,8 +181,12 @@ export default function LeadsPage() {
   }
 
   async function disparoEmLote() {
-    const paraEnviar = visiveis.filter(l => l.email && ["novo", "mensagem_gerada"].includes(l.status));
-    if (paraEnviar.length === 0) return setAviso("Nenhum lead com e-mail disponível para envio nesta lista.");
+    const paraEnviar = visiveis.filter(l => 
+      l.email && 
+      !l.email.includes("duckduckgo.com") && 
+      ["novo", "mensagem_gerada"].includes(l.status)
+    );
+    if (paraEnviar.length === 0) return setAviso("Nenhum lead com e-mail válido disponível para envio.");
     if (!confirm(`Deseja disparar e-mails com IA para ${paraEnviar.length} leads?`)) return;
     
     let sucessos = 0;
