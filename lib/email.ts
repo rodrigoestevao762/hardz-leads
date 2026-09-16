@@ -9,7 +9,7 @@ export async function enviarEmailDoLead(
   lead: LeadEmail,
   texto: string,
   assunto?: string,
-  negocioNome = "HardZ Sites"
+  negocioNome = "Prospectando AI"
 ): Promise<{ ok: true } | { ok: false; erro: string; status: number }> {
   if (!lead.email) return { ok: false, erro: "lead sem e-mail", status: 400 };
 

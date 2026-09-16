@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     if (e1 || !lead) return NextResponse.json({ erro: "lead não encontrado" }, { status: 404 });
 
     const { data: settings } = await sb.from("settings").select("negocio_nome").eq("user_id", user.id).single();
-    const r = await enviarEmailDoLead(sb, user, lead, texto, assunto, settings?.negocio_nome || "HardZ Sites");
+    const r = await enviarEmailDoLead(sb, user, lead, texto, assunto, settings?.negocio_nome || "Prospectando AI");
     if (!r.ok) return NextResponse.json({ erro: r.erro }, { status: r.status });
     return NextResponse.json({ ok: true });
   } catch (e: unknown) {

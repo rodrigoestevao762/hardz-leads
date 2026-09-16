@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     if (!texto) {
       const { data: settings } = await sb
         .from("settings").select("negocio_nome, servico, diferenciais").eq("user_id", user.id).single();
-      const negocio = settings || { negocio_nome: "HardZ Sites", servico: "Criação de sites profissionais", diferenciais: "Site próprio que aparece no Google, entrega rápida" };
+      const negocio = settings || { negocio_nome: "Prospectando AI", servico: "Criação de sites profissionais", diferenciais: "Site próprio que aparece no Google, entrega rápida" };
       const g = await gerarMensagem(
         {
           nome: lead.nome, categoria: lead.categoria, cidade: lead.cidade, pais: lead.pais,
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     }
 
     const { data: settings } = await sb.from("settings").select("negocio_nome").eq("user_id", user.id).single();
-    const r = await enviarEmailDoLead(sb, user, lead, texto, undefined, settings?.negocio_nome || "HardZ Sites");
+    const r = await enviarEmailDoLead(sb, user, lead, texto, undefined, settings?.negocio_nome || "Prospectando AI");
     if (!r.ok) return NextResponse.json({ erro: r.erro }, { status: r.status });
     return NextResponse.json({ ok: true, texto, fonte });
   } catch (e: unknown) {

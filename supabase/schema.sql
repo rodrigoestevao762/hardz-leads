@@ -1,4 +1,4 @@
--- HardZ Leads — schema v1 (idempotente: pode rodar várias vezes sem erro)
+-- ProspectandoAI — schema v1 (idempotente: pode rodar várias vezes sem erro)
 -- Cole e rode este script no SQL Editor do seu projeto Supabase.
 
 -- Limpa objetos anteriores (se existirem)
@@ -55,7 +55,7 @@ create table public.messages (
 -- Configurações do negócio do usuário (usadas na personalização)
 create table public.settings (
   user_id uuid primary key references auth.users(id) on delete cascade,
-  negocio_nome text not null default 'HardZ Sites',
+  negocio_nome text not null default 'Prospectando AI',
   servico text not null default 'Criação de sites profissionais',
   diferenciais text not null default 'Site próprio que aparece no Google, agendamento integrado, entrega rápida',
   remetente_email text,
