@@ -13,13 +13,7 @@ export async function GET(req: Request) {
     
     const text = await res.text();
     
-    // Extract base64
-    const b64 = text.match(/aHR0c[a-zA-Z0-9+\/]+/g) || [];
-    const decoded = b64.map(b => {
-      try { return Buffer.from(b, 'base64').toString('utf8'); } catch(e) { return ""; }
-    }).filter(u => u.includes('instagram.com') || u.includes('ifood.com.br'));
-    
-    return NextResponse.json({ ok: res.ok, status: res.status, decoded });
+    return NextResponse.json({ ok: res.ok, status: res.status, length: text.length, snippet: text.substring(0, 500) });
   } catch (e: any) {
     return NextResponse.json({ error: e.message });
   }
