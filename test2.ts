@@ -1,0 +1,1 @@
+import {radarInstagram} from './lib/enrichment'; radarInstagram('padaria', 'são paulo').then(console.log)

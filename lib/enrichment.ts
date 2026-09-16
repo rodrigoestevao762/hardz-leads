@@ -88,19 +88,28 @@ export async function enrichLeadData(nome: string, cidade: string, uf: string = 
 }
 
 export async function radarInstagram(nicho: string, cidade: string) {
-  const query = `${nicho} ${cidade} site:instagram.com`.trim();
+  // Limpa a palavra "mundial" ou vazia para não quebrar a busca
+  const cid = (cidade.toLowerCase() === "mundial" || cidade.trim() === "") ? "" : cidade.trim();
+  const nic = nicho.trim() || "empresa";
   
-  const [htmlBing, htmlDuck, htmlYahoo] = await Promise.all([
-    searchBing(query),
-    searchDuckDuckGo(query),
-    searchYahoo(query)
+  const base = `${nic} ${cid}`.trim();
+  
+  // Nível Espião: 7 varreduras simultâneas com Dorks diferentes para extrair o máximo possível
+  const [h1, h2, h3, h4, h5, h6, h7] = await Promise.all([
+    searchDuckDuckGo(`${base} site:instagram.com`),
+    searchDuckDuckGo(`${base} "instagram.com"`), // Sem site: para pegar menções
+    searchDuckDuckGo(`${base} instagram oficial`),
+    searchDuckDuckGo(`intitle:"${nic}" ${cid} site:instagram.com`),
+    searchBing(`${base} site:instagram.com`),
+    searchBing(`${base} instagram perfil`),
+    searchYahoo(`${base} site:instagram.com`)
   ]);
   
-  const htmlUnificado = htmlBing + " " + htmlDuck + " " + htmlYahoo;
+  const htmlUnificado = h1 + " " + h2 + " " + h3 + " " + h4 + " " + h5 + " " + h6 + " " + h7;
   
   const instaMatches = htmlUnificado.match(/instagram\.com\/([A-Za-z0-9_.]+)/gi) || [];
   
-  const ignorar = ['/p/', '/reel/', '/explore/', '/stories/', '/tags/', '/directory/', '/developer/', '/about/', '/legal/'];
+  const ignorar = ['/p/', '/reel/', '/explore/', '/stories/', '/tags/', '/directory/', '/developer/', '/about/', '/legal/', '/web/'];
   const usernames = new Set<string>();
   
   for (const match of instaMatches) {
@@ -114,7 +123,11 @@ export async function radarInstagram(nicho: string, cidade: string) {
     }
   }
   
-  return Array.from(usernames).map(user => {
+  // Limita a 100 resultados para não travar o navegador
+  const listaFinal = Array.from(usernames).slice(0, 100);
+  
+  return listaFinal.map(user => {
+    // Formata o nome para ficar bonito (ex: barbearia_do_ze -> Barbearia Do Ze)
     const nomeFormatado = user.replace(/[._]/g, " ").replace(/\b\w/g, l => l.toUpperCase());
     return {
       osmId: "insta_" + user,
