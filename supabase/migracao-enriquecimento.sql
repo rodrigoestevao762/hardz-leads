@@ -1,0 +1,1 @@
+alter table public.leads add column if not exists facebook text; alter table public.leads add column if not exists fontes jsonb default '{}'::jsonb; alter table public.leads add column if not exists enriquecido_em timestamptz;

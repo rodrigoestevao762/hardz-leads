@@ -101,3 +101,8 @@ drop policy if exists "leitura publica landings publicadas" on public.landings;
 create policy "leitura publica landings publicadas" on public.landings
   for select using (publicada = true);
 create unique index if not exists landings_slug_unico on public.landings (slug);
+
+-- Novas colunas de Enriquecimento de Leads
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS facebook text;
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS fontes jsonb default '{}'::jsonb;
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS enriquecido_em timestamptz;

@@ -9,6 +9,7 @@ type Lead = {
   id: string;
   nome: string; categoria: string; cidade: string; pais: string;
   telefone: string | null; website: string | null; instagram: string | null; email: string | null;
+  facebook: string | null; fontes: string[]; enriquecido_em: string | null;
   score: number; nivel: "quente" | "morno" | "frio";
   status: "novo" | "mensagem_gerada" | "enviado" | "respondido" | "cliente";
   canal: "email" | "dm" | null; notas: string | null;
@@ -135,6 +136,29 @@ export default function LeadsPage() {
     atualizar(l.id, { status: "enviado", canal: "dm" });
   }
 
+  async function enriquecerLead(l: Lead) {
+    setOcupado(l.id + ":enriquecer"); setAviso(null);
+    const res = await fetch("/api/enrich", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id, nome: l.nome, cidade: l.cidade, pais: l.pais }),
+    });
+    const json = await res.json();
+    setOcupado(null);
+    if (!res.ok) return setAviso("Erro no enriquecimento: " + json.error);
+    setLeads((ls) => ls.map((lead) => (lead.id === l.id ? { ...lead, ...json.lead } : lead)));
+    setAviso(`Enriquecimento de ${l.nome} concluído com sucesso!`);
+  }
+
+  async function enriquecerEmLote() {
+    const leadsParaEnriquecer = visiveis.filter(l => !l.instagram && !l.email && !l.enriquecido_em).slice(0, 5); // enriquecendo 5 por vez
+    if (leadsParaEnriquecer.length === 0) return setAviso("Nenhum lead visível precisa de enriquecimento.");
+    
+    setAviso(`Enriquecendo ${leadsParaEnriquecer.length} leads...`);
+    for (const l of leadsParaEnriquecer) {
+      await enriquecerLead(l);
+    }
+    setAviso(`Enriquecimento em lote concluído!`);
+  }
+
   const contagem = {
     quente: visiveis.filter((l) => l.nivel === "quente").length,
     morno: visiveis.filter((l) => l.nivel === "morno").length,
@@ -180,10 +204,13 @@ export default function LeadsPage() {
           {CATEGORIAS.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
         </select>
         <select value={fNivel} onChange={(e) => setFNivel(e.target.value)} className="field mono rounded-lg px-2.5 py-1.5 text-xs">
-          <option value="all">Todos níveis</option><option value="quente">🔥 Quente</option><option value="morno">◐ Morno</option><option value="frio">○ Frio</option>
+          <option value="all">Todos níveis</option><option value="quente">🔥 Quente</option><option value="morno">💡 Morno</option><option value="frio">❄ Frio</option>
         </select>
         <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar nome/cidade..."
           className="field mono min-w-44 flex-1 rounded-lg px-3 py-1.5 text-xs" />
+        <button onClick={enriquecerEmLote} disabled={!!ocupado} className="button bg-[rgba(45,255,180,0.12)] text-[var(--signal)] rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_rgba(45,255,180,0.35)] hover:bg-[rgba(45,255,180,0.2)] disabled:opacity-50">
+          Enriquecer Lote
+        </button>
       </div>
 
       {aviso && (
@@ -251,6 +278,10 @@ export default function LeadsPage() {
                     ✓ {l.canal === "dm" ? "DM enviada" : "e-mail enviado"}
                   </span>
                 )}
+                <button onClick={() => enriquecerLead(l)} disabled={!!ocupado}
+                  className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest text-[#e879f9] transition hover:bg-white/5 disabled:opacity-50">
+                  {ocupado === l.id + ":enriquecer" ? "buscando..." : "🔍 enriquecer"}
+                </button>
                 <button onClick={() => gerar(l)} disabled={!!ocupado}
                   className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest disabled:opacity-50">
                   {ocupado === l.id + ":gerar" ? "gerando..." : msgAberta[l.id] ? "↻ regerar" : "✦ gerar mensagem"}
