@@ -211,6 +211,31 @@ export default function LeadsPage() {
     setAviso(`Disparo concluído: ${sucessos} e-mails enviados.`);
   }
 
+  async function gerarDMsEmLote() {
+    const paraGerar = visiveis.filter(l => l.instagram && l.status === "novo");
+    if (paraGerar.length === 0) return setAviso("Nenhum lead novo com Instagram disponível para gerar mensagens.");
+    if (!confirm(`Deseja gerar mensagens persuasivas via IA para ${paraGerar.length} leads do Instagram?`)) return;
+    
+    let sucessos = 0;
+    for (const l of paraGerar) {
+      setAviso(`Gerando DM para ${l.nome}... (${sucessos}/${paraGerar.length})`);
+      setOcupado(l.id + ":gerar");
+      const res = await fetch("/api/gerar-mensagem", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
+      });
+      const json = await res.json();
+      setOcupado(null);
+      if (res.ok) {
+        setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
+        await atualizar(l.id, { status: "mensagem_gerada" });
+        sucessos++;
+      } else {
+        setAviso(`Falha ao gerar para ${l.nome}: ${json.erro}`);
+      }
+    }
+    setAviso(`Concluído! ${sucessos} DMs geradas prontas para envio.`);
+  }
+
   async function limparTodos() {
     const sb = supabaseBrowser();
     if (visiveis.length === 0) return setAviso("Nenhum lead visível para excluir.");
@@ -285,6 +310,9 @@ export default function LeadsPage() {
         </button>
         <button onClick={disparoEmLote} disabled={!!ocupado} className="button bg-[#c9974c]/15 text-[#c9974c] rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_rgba(201,151,76,0.35)] hover:bg-[#c9974c]/25 disabled:opacity-50">
           Disparo (E-mails)
+        </button>
+        <button onClick={gerarDMsEmLote} disabled={!!ocupado} className="button bg-gradient-to-r from-[#833ab4]/30 via-[#d6249f]/30 to-[#fcaf45]/30 text-white rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest hover:brightness-125 disabled:opacity-50">
+          Gerar DMs (Insta)
         </button>
         <button onClick={limparSemRedes} disabled={!!ocupado} className="button bg-[var(--alert)]/10 text-[var(--alert)] rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_var(--alert)] hover:bg-[var(--alert)]/20 disabled:opacity-50">
           Limpar s/ Insta
