@@ -159,6 +159,27 @@ export default function LeadsPage() {
     setAviso(`Enriquecimento em lote concluído!`);
   }
 
+  async function excluirLead(id: string) {
+    const sb = supabaseBrowser();
+    setOcupado(id + ":excluir");
+    await sb.from("leads").delete().eq("id", id);
+    setLeads((ls) => ls.filter((l) => l.id !== id));
+    setOcupado(null);
+  }
+
+  async function limparSemRedes() {
+    const sb = supabaseBrowser();
+    const paraExcluir = visiveis.filter(l => !l.instagram && !l.email);
+    if (paraExcluir.length === 0) return setAviso("Nenhum lead sem rede encontrado.");
+    if (!confirm(`Tem certeza que deseja excluir ${paraExcluir.length} leads sem Instagram/E-mail?`)) return;
+    
+    setAviso(`Excluindo ${paraExcluir.length} leads...`);
+    const ids = paraExcluir.map(l => l.id);
+    await sb.from("leads").delete().in("id", ids);
+    setLeads((ls) => ls.filter((l) => !ids.includes(l.id)));
+    setAviso(`${paraExcluir.length} leads excluídos com sucesso.`);
+  }
+
   const contagem = {
     quente: visiveis.filter((l) => l.nivel === "quente").length,
     morno: visiveis.filter((l) => l.nivel === "morno").length,
@@ -210,6 +231,9 @@ export default function LeadsPage() {
           className="field mono min-w-44 flex-1 rounded-lg px-3 py-1.5 text-xs" />
         <button onClick={enriquecerEmLote} disabled={!!ocupado} className="button bg-[rgba(45,255,180,0.12)] text-[var(--signal)] rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_rgba(45,255,180,0.35)] hover:bg-[rgba(45,255,180,0.2)] disabled:opacity-50">
           Enriquecer Lote
+        </button>
+        <button onClick={limparSemRedes} disabled={!!ocupado} className="button bg-[var(--alert)]/10 text-[var(--alert)] rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_var(--alert)] hover:bg-[var(--alert)]/20 disabled:opacity-50">
+          Limpar s/ Insta
         </button>
       </div>
 
@@ -299,6 +323,10 @@ export default function LeadsPage() {
                 <button onClick={() => router.push(`/app/editor/${l.id}`)}
                   className="mono rounded-lg bg-[#c9974c]/15 px-3.5 py-2 text-[10px] uppercase tracking-widest text-[#c9974c] shadow-[inset_0_0_0_1px_rgba(201,151,76,0.4)] transition hover:bg-[#c9974c]/25">
                   ✦ landing
+                </button>
+                <button onClick={() => excluirLead(l.id)} disabled={!!ocupado}
+                  className="btn-ghost mono ml-auto rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest text-[var(--alert)] transition hover:bg-[var(--alert)]/10 disabled:opacity-50">
+                  {ocupado === l.id + ":excluir" ? "..." : "🗑 excluir"}
                 </button>
               </div>
             </div>
