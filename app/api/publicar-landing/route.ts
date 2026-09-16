@@ -35,9 +35,10 @@ export async function POST(req: Request) {
     }
 
     // publicar: snapshot dos dados do lead + slug único
+    // (a tabela leads não tem coluna endereco — o mapa/rua fica null na landing)
     const { data: lead } = await sb
       .from("leads")
-      .select("nome, categoria, cidade, telefone, email, instagram, endereco")
+      .select("nome, categoria, cidade, telefone, email, instagram")
       .eq("id", leadId)
       .single();
     if (!lead) return NextResponse.json({ erro: "lead não encontrado" }, { status: 404 });
