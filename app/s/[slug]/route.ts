@@ -23,15 +23,15 @@ a{color:#2dffb4}</style></head>
     );
   }
 
-  const d = (data.dados || {}) as Partial<DadosLanding>;
+  const d = (data.dados || {}) as Record<string, unknown>;
   const dados: DadosLanding = {
-    nome: d.nome || "Negócio",
-    categoriaLabel: d.categoriaLabel || "negócio local",
-    cidade: d.cidade || "",
-    telefone: d.telefone ?? null,
-    email: d.email ?? null,
-    instagram: d.instagram ?? null,
-    endereco: d.endereco ?? null,
+    nome: (d.nome as string) || "Negócio",
+    categoriaLabel: (d.categoriaLabel as string) || (d.categoria as string) || "negócio local",
+    cidade: (d.cidade as string) || "",
+    telefone: (d.telefone as string | null) ?? null,
+    email: (d.email as string | null) ?? null,
+    instagram: (d.instagram as string | null) ?? null,
+    endereco: (d.endereco as string | null) ?? null,
   };
 
   const html = buildLandingHTML(
