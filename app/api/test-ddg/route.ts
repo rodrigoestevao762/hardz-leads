@@ -1,25 +1,20 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  try {
-    const res1 = await fetch("https://searx.work/search?q=barbearia+sao+paulo+site:instagram.com", {
-      headers: { "User-Agent": "Mozilla/5.0" }
-    });
-    
-    const res2 = await fetch("https://paulgo.io/search?q=barbearia+sao+paulo+site:instagram.com", {
-      headers: { "User-Agent": "Mozilla/5.0" }
-    });
+  const test = async (url: string) => {
+    try {
+      const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
+      return { ok: res.ok, status: res.status, length: (await res.text()).length };
+    } catch (e: any) {
+      return { error: e.message };
+    }
+  };
 
-    const res3 = await fetch("https://searx.tiekoetter.com/search?q=barbearia+sao+paulo+site:instagram.com", {
-      headers: { "User-Agent": "Mozilla/5.0" }
-    });
-    
-    return NextResponse.json({
-      searxwork: { ok: res1.ok, status: res1.status, length: (await res1.text()).length },
-      paulgo: { ok: res2.ok, status: res2.status, length: (await res2.text()).length },
-      tiekoetter: { ok: res3.ok, status: res3.status, length: (await res3.text()).length }
-    });
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message });
-  }
+  return NextResponse.json({
+    searxwork: await test("https://searx.work/search?q=barbearia+sao+paulo+site:instagram.com"),
+    paulgo: await test("https://paulgo.io/search?q=barbearia+sao+paulo+site:instagram.com"),
+    tiekoetter: await test("https://searx.tiekoetter.com/search?q=barbearia+sao+paulo+site:instagram.com"),
+    duckduckgo: await test("https://html.duckduckgo.com/html/?q=barbearia+sao+paulo"),
+    bing: await test("https://www.bing.com/search?q=barbearia+sao+paulo")
+  });
 }
