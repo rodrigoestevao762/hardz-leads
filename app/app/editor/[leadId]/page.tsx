@@ -102,9 +102,10 @@ export default function EditorLanding() {
       if (!doc) return;
       doc.body.contentEditable = "true";
       doc.body.style.outline = "none";
-      doc.addEventListener("focusout", () => {
-        const ativo = doc.activeElement as HTMLElement | null;
-        const alvo = ativo?.closest?.("[data-campo]") as HTMLElement | null;
+      // com contentEditable o foco fica no body (host de edição), então detectamos
+      // as edições pelo evento "input", que traz o elemento real em e.target
+      doc.addEventListener("input", (e) => {
+        const alvo = (e.target as HTMLElement | null)?.closest?.("[data-campo]") as HTMLElement | null;
         if (!alvo) return;
         const caminho = alvo.getAttribute("data-campo");
         const novo = (alvo.textContent || "").trim();
