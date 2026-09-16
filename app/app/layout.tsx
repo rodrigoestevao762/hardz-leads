@@ -8,7 +8,8 @@ const LINKS = [
   { href: "/app", label: "Leads" },
   { href: "/app/busca", label: "Buscar empresas" },
   { href: "/app/mapa", label: "Mapa mundial" },
-  { href: "/app/insta", label: "Radar Instagram" },
+  { href: "/app/insta", label: "Radar Insta" },
+  { href: "/app/foods", label: "Radar Foods" },
   { href: "/app/configuracoes", label: "Configurações" },
 ];
 

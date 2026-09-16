@@ -145,3 +145,92 @@ export async function radarInstagram(nicho: string, cidade: string) {
     };
   });
 }
+
+export async function radarFoods(nicho: string, cidade: string) {
+  const cid = (cidade.toLowerCase() === "mundial" || cidade.trim() === "") ? "" : cidade.trim();
+  const nic = nicho.trim() || "restaurante";
+  const base = `${nic} ${cid}`.trim();
+
+  // Dorks focados nas maiores plataformas de delivery/turismo
+  const [h1, h2, h3, h4, h5, h6] = await Promise.all([
+    searchDuckDuckGo(`${base} site:ifood.com.br`),
+    searchDuckDuckGo(`${base} site:ubereats.com`),
+    searchBing(`${base} site:glovoapp.com`),
+    searchBing(`${base} site:tripadvisor.com OR site:tripadvisor.com.br`),
+    searchDuckDuckGo(`${base} site:rappi.com.br OR site:rappi.com`),
+    searchYahoo(`${base} site:zomato.com OR site:just-eat.com`)
+  ]);
+
+  const htmlUnificado = h1 + " " + h2 + " " + h3 + " " + h4 + " " + h5 + " " + h6;
+
+  // Regex para pegar URLs dos sites
+  const urlsMatches = htmlUnificado.match(/https?:\/\/(www\.)?([a-zA-Z0-9.-]+)\/([^"'\s<]+)/gi) || [];
+
+  const dominiosAlvo = ['ifood.com.br', 'ubereats.com', 'glovoapp.com', 'tripadvisor', 'rappi.com', 'zomato.com', 'just-eat.com'];
+  
+  const restaurantes = new Map<string, { nome: string; url: string; fonteStr: string }>();
+
+  for (const link of urlsMatches) {
+    if (!dominiosAlvo.some(d => link.includes(d))) continue;
+    
+    try {
+      const urlObj = new URL(link);
+      const dominio = urlObj.hostname.replace('www.', '');
+      
+      // Tentar extrair o nome baseado na estrutura da URL de cada app
+      let nomeBruto = "";
+      let path = urlObj.pathname;
+      
+      if (dominio.includes("ifood")) {
+        // /delivery/cidade-uf/nome-do-restaurante/id
+        const parts = path.split('/');
+        nomeBruto = parts[3] || parts[2] || "";
+      } else if (dominio.includes("tripadvisor")) {
+        // /Restaurant_Review-gXXXX-dXXXX-Reviews-Nome_Restaurante.html
+        const match = path.match(/-Reviews-([^-.]+)/);
+        nomeBruto = match ? match[1] : path.split('-').pop()?.replace('.html', '') || "";
+      } else if (dominio.includes("ubereats")) {
+        // /store/nome-restaurante/id
+        const parts = path.split('/');
+        nomeBruto = parts.includes("store") ? parts[parts.indexOf("store") + 1] : "";
+      } else {
+        // Fallback genérico (pega o último path slug)
+        const parts = path.split('/').filter(Boolean);
+        nomeBruto = parts[parts.length - 1] || "";
+      }
+      
+      if (!nomeBruto || nomeBruto.length < 3 || nomeBruto.includes("?")) continue;
+      
+      // Limpa nome
+      const nomeLimpo = nomeBruto.replace(/[_-]/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+      const chave = nomeLimpo.toLowerCase();
+      
+      if (!restaurantes.has(chave)) {
+        restaurantes.set(chave, {
+          nome: nomeLimpo,
+          url: link,
+          fonteStr: dominio.split('.')[0]
+        });
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  const listaFinal = Array.from(restaurantes.values()).slice(0, 100);
+
+  return listaFinal.map(r => ({
+    osmId: `food_${r.fonteStr}_${r.nome.replace(/\s+/g, '')}`,
+    nome: r.nome,
+    categoria: nicho || "Restaurante",
+    cidade: cidade || "Global",
+    pais: "",
+    telefone: null,
+    website: r.url,
+    email: null,
+    instagram: null,
+    fonte: r.fonteStr,
+    score: 60,
+    nivel: "morno"
+  }));
+}
