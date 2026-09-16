@@ -12,8 +12,7 @@ export async function GET(req: Request) {
     });
     
     const text = await res.text();
-    
-    return NextResponse.json({ ok: res.ok, status: res.status, length: text.length, snippet: text.substring(0, 500) });
+    return new NextResponse(text, { headers: { "Content-Type": "text/html" } });
   } catch (e: any) {
     return NextResponse.json({ error: e.message });
   }
