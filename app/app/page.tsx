@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { CATEGORIAS } from "@/lib/categorias";
 
@@ -36,6 +37,7 @@ const NIVEL_ESTILO: Record<Lead["nivel"], { borda: string; badge: string; icone:
 };
 
 export default function LeadsPage() {
+  const router = useRouter();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [fCat, setFCat] = useState("all");
@@ -216,6 +218,10 @@ export default function LeadsPage() {
                 <button onClick={() => abrirDM(l)}
                   className="mono rounded-lg bg-gradient-to-r from-[#833ab4]/80 via-[#d6249f]/80 to-[#fcaf45]/80 px-3.5 py-2 text-[10px] uppercase tracking-widest text-white transition hover:brightness-110">
                   ◆ abrir DM
+                </button>
+                <button onClick={() => router.push(`/app/editor/${l.id}`)}
+                  className="mono rounded-lg bg-[#c9974c]/15 px-3.5 py-2 text-[10px] uppercase tracking-widest text-[#c9974c] shadow-[inset_0_0_0_1px_rgba(201,151,76,0.4)] transition hover:bg-[#c9974c]/25">
+                  ✦ landing
                 </button>
               </div>
             </div>
