@@ -476,14 +476,18 @@ export default function LeadsPage() {
                     📸 Instagram
                   </button>
                 )}
-                <button onClick={() => abrirWhatsApp(l)}
-                  className="mono rounded-lg bg-[#25D366]/80 px-3.5 py-2 text-[10px] uppercase tracking-widest text-white transition hover:brightness-110">
-                  💬 WhatsApp
-                </button>
-                <button onClick={() => abrirFacebook(l)}
-                  className="mono rounded-lg bg-[#1877F2]/80 px-3.5 py-2 text-[10px] uppercase tracking-widest text-white transition hover:brightness-110">
-                  📘 Facebook
-                </button>
+                {l.telefone && (
+                  <button onClick={() => abrirWhatsApp(l)}
+                    className="mono rounded-lg bg-[#25D366]/80 px-3.5 py-2 text-[10px] uppercase tracking-widest text-white transition hover:brightness-110">
+                    💬 WhatsApp
+                  </button>
+                )}
+                {l.facebook && (
+                  <button onClick={() => abrirFacebook(l)}
+                    className="mono rounded-lg bg-[#1877F2]/80 px-3.5 py-2 text-[10px] uppercase tracking-widest text-white transition hover:brightness-110">
+                    📘 Facebook
+                  </button>
+                )}
                 <button onClick={() => router.push(`/app/editor/${l.id}`)}
                   className="mono rounded-lg bg-[#c9974c]/15 px-3.5 py-2 text-[10px] uppercase tracking-widest text-[#c9974c] shadow-[inset_0_0_0_1px_rgba(201,151,76,0.4)] transition hover:bg-[#c9974c]/25">
                   ✦ landing

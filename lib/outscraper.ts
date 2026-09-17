@@ -37,3 +37,4 @@ export async function buscarOutscraper(query: string, apiKey: string) {
     };
   });
 }
+
