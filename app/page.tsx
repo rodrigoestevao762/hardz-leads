@@ -84,68 +84,66 @@ export default function CyberpunkLanding() {
       <div className="scan-line z-50 pointer-events-none opacity-50 mix-blend-screen" />
 
       {/* ======================= NAV ======================= */}
-      <nav className="relative z-40 mx-auto flex max-w-7xl items-center justify-between px-6 py-6 backdrop-blur-md border-b border-white/5">
+      <nav className="fixed top-0 inset-x-0 z-50 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 backdrop-blur-xl border-b border-white/5 bg-black/40">
         <motion.div 
-          initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-3 group"
+          initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3"
         >
-          <div className="radar h-10 w-10 border-[#38bdf8] group-hover:scale-110 transition-transform">
-            <div className="radar-sweep opacity-80" style={{ background: "linear-gradient(90deg, transparent 50%, rgba(56,189,248,0.5) 100%)" }} />
+          <div className="w-8 h-8 rounded-md bg-gradient-to-br from-white to-gray-400 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.2)]">
+            <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
           </div>
-          <span className="font-display text-xl font-black uppercase tracking-widest text-white drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]">
-            HARDZ<span className="text-[#38bdf8]">.AI</span>
+          <span className="font-display text-lg font-bold tracking-widest text-white">
+            HARDZ<span className="text-white/40 font-light">.AI</span>
           </span>
         </motion.div>
         
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          <Link href="/login" className="btn-3d shadow-[0_0_20px_rgba(56,189,248,0.3)] bg-gradient-to-b from-[#38bdf8] to-[#0284c7] text-[#082f49] box-shadow-none">
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+          <Link href="/login" className="px-6 py-2.5 rounded-full border border-white/10 bg-white/5 text-xs font-semibold tracking-widest uppercase text-white hover:bg-white/10 transition-colors">
             INIT UPLINK →
           </Link>
         </motion.div>
       </nav>
 
       {/* ======================= HERO ======================= */}
-      <section className="relative z-10 mx-auto flex min-h-[85vh] max-w-7xl flex-col justify-center px-6 text-left">
+      <section className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-6 text-center pt-20">
         
-        {/* Glow backdrop for text */}
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[600px] h-[600px] bg-[#38bdf8] opacity-10 blur-[150px] pointer-events-none rounded-full" />
+        {/* Subtle top glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-white opacity-5 blur-[120px] pointer-events-none rounded-full" />
 
-        <div className="max-w-4xl">
-          <motion.div 
-            initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, duration: 1 }}
-            className="mono mb-8 inline-flex items-center gap-3 rounded-full border border-[#38bdf8]/30 bg-[#38bdf8]/10 px-5 py-2.5 text-xs uppercase tracking-[0.2em] text-[#38bdf8] backdrop-blur-md"
-          >
-            <span className="w-2 h-2 rounded-full bg-[#38bdf8] shadow-[0_0_8px_#38bdf8] animate-pulse" />
-            Sistema de varredura global online
-          </motion.div>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.8 }}
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-widest text-white/80"
+        >
+          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+          SISTEMA DE VARREDURA GLOBAL ONLINE
+        </motion.div>
 
-          <h1 ref={heroTextRef} className="font-impact text-7xl uppercase tracking-normal sm:text-8xl md:text-[9rem] lg:text-[11rem] leading-[0.8] text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-            DOMINE O <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#38bdf8] via-[#8b5cf6] to-[#ec4899] drop-shadow-[0_0_40px_rgba(139,92,246,0.4)]">
-              CYBERESPAÇO.
-            </span>
-          </h1>
+        <h1 ref={heroTextRef} className="font-display text-5xl sm:text-6xl md:text-8xl font-black tracking-tight text-white leading-[1.1] mb-6">
+          DOMINE O <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
+            CYBERESPAÇO.
+          </span>
+        </h1>
 
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
-            className="mt-10 max-w-2xl text-lg md:text-xl text-[var(--ink-dim)] font-body leading-relaxed"
-          >
-            Extração de dados neurais. Varredura global OSINT. 
-            Encontre corporações vulneráveis (sem website) no mundo inteiro e hackeie suas caixas de entrada com inteligência artificial.
-          </motion.p>
+        <motion.p 
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+          className="max-w-2xl text-base md:text-lg text-[var(--ink-dim)] font-body leading-relaxed mb-10"
+        >
+          Extração de dados neurais. Varredura global OSINT. 
+          Encontre corporações vulneráveis (sem website) no mundo inteiro e hackeie suas caixas de entrada com inteligência artificial.
+        </motion.p>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }}
-            className="mt-12 flex flex-wrap gap-6"
-          >
-            <Link href="/login" className="btn-3d shadow-[0_0_30px_rgba(139,92,246,0.4)] bg-gradient-to-r from-[#38bdf8] to-[#8b5cf6] text-white py-5 px-12 text-sm">
-              ▶ ACESSO AO TERMINAL
-            </Link>
-            <a href="#matrix" className="btn-3d btn-3d-dark py-5 px-12 text-sm border border-white/10 hover:border-[#38bdf8]/50">
-              VISÃO TÁTICA
-            </a>
-          </motion.div>
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+          className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
+        >
+          <Link href="/login" className="flex items-center justify-center px-8 py-4 rounded-xl bg-white text-black font-bold tracking-widest uppercase text-sm hover:bg-gray-200 transition-colors shadow-[0_0_30px_rgba(255,255,255,0.2)]">
+            ▶ ACESSO AO TERMINAL
+          </Link>
+          <a href="#matrix" className="flex items-center justify-center px-8 py-4 rounded-xl border border-white/10 bg-white/5 text-white font-bold tracking-widest uppercase text-sm hover:bg-white/10 transition-colors">
+            VISÃO TÁTICA
+          </a>
+        </motion.div>
       </section>
 
       {/* ======================= GLOBAL TRACKING WIDGET (GLOBE) ======================= */}
