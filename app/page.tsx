@@ -89,54 +89,63 @@ export default function CyberpunkLanding() {
           initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-3 group"
         >
-          <div className="radar h-10 w-10 border-[var(--signal)] group-hover:scale-110 transition-transform">
-            <div className="radar-sweep opacity-80" />
+          <div className="radar h-10 w-10 border-[#38bdf8] group-hover:scale-110 transition-transform">
+            <div className="radar-sweep opacity-80" style={{ background: "linear-gradient(90deg, transparent 50%, rgba(56,189,248,0.5) 100%)" }} />
           </div>
-          <span className="headline text-sm font-bold uppercase tracking-widest text-white drop-shadow-[0_0_10px_rgba(45,255,180,0.8)]">
-            NEXUS<span className="text-[var(--signal)]">.AI</span>
+          <span className="font-display text-xl font-black uppercase tracking-widest text-white drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]">
+            HARDZ<span className="text-[#38bdf8]">.AI</span>
           </span>
         </motion.div>
         
         <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}>
-          <Link href="/login" className="btn-3d btn-3d-primary shadow-[0_0_20px_rgba(45,255,180,0.4)]">
+          <Link href="/login" className="btn-3d shadow-[0_0_20px_rgba(56,189,248,0.3)] bg-gradient-to-b from-[#38bdf8] to-[#0284c7] text-[#082f49] box-shadow-none">
             INIT UPLINK →
           </Link>
         </motion.div>
       </nav>
 
       {/* ======================= HERO ======================= */}
-      <section className="relative z-10 mx-auto flex min-h-[85vh] max-w-7xl flex-col items-center justify-center px-6 text-center">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5, duration: 1 }}
-          className="mono mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--signal)]/30 bg-[var(--signal)]/10 px-4 py-2 text-[10px] uppercase tracking-[0.3em] text-[var(--signal)]"
-        >
-          <span className="pulse-dot" /> Sistema de varredura global online
-        </motion.div>
+      <section className="relative z-10 mx-auto flex min-h-[85vh] max-w-7xl flex-col justify-center px-6 text-left">
+        
+        {/* Glow backdrop for text */}
+        <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[600px] h-[600px] bg-[#38bdf8] opacity-10 blur-[150px] pointer-events-none rounded-full" />
 
-        <h1 ref={heroTextRef} className="headline text-6xl font-black uppercase tracking-tighter sm:text-8xl md:text-[8rem] leading-[0.85] text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-white/40 drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-          DOMINE O <br />
-          <span className="text-[var(--signal)] drop-shadow-[0_0_40px_rgba(45,255,180,0.6)]">CYBERESPAÇO.</span>
-        </h1>
+        <div className="max-w-4xl">
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5, duration: 1 }}
+            className="mono mb-8 inline-flex items-center gap-3 rounded-full border border-[#38bdf8]/30 bg-[#38bdf8]/10 px-5 py-2.5 text-xs uppercase tracking-[0.2em] text-[#38bdf8] backdrop-blur-md"
+          >
+            <span className="w-2 h-2 rounded-full bg-[#38bdf8] shadow-[0_0_8px_#38bdf8] animate-pulse" />
+            Sistema de varredura global online
+          </motion.div>
 
-        <motion.p 
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
-          className="mt-8 max-w-2xl text-lg text-[var(--ink-dim)] mono"
-        >
-          Extração de dados neurais. Varredura global OSINT. 
-          Encontre corporações vulneráveis (sem website) no mundo inteiro e hackeie suas caixas de entrada com inteligência artificial.
-        </motion.p>
+          <h1 ref={heroTextRef} className="font-impact text-7xl uppercase tracking-normal sm:text-8xl md:text-[9rem] lg:text-[11rem] leading-[0.8] text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+            DOMINE O <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#38bdf8] via-[#8b5cf6] to-[#ec4899] drop-shadow-[0_0_40px_rgba(139,92,246,0.4)]">
+              CYBERESPAÇO.
+            </span>
+          </h1>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }}
-          className="mt-12 flex flex-wrap justify-center gap-6"
-        >
-          <Link href="/login" className="btn-3d btn-3d-primary py-4 px-10 text-sm">
-            ▶ ACESSO AO TERMINAL
-          </Link>
-          <a href="#matrix" className="btn-3d btn-3d-dark py-4 px-10 text-sm border border-white/10">
-            VISÃO TÁTICA
-          </a>
-        </motion.div>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}
+            className="mt-10 max-w-2xl text-lg md:text-xl text-[var(--ink-dim)] font-body leading-relaxed"
+          >
+            Extração de dados neurais. Varredura global OSINT. 
+            Encontre corporações vulneráveis (sem website) no mundo inteiro e hackeie suas caixas de entrada com inteligência artificial.
+          </motion.p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1 }}
+            className="mt-12 flex flex-wrap gap-6"
+          >
+            <Link href="/login" className="btn-3d shadow-[0_0_30px_rgba(139,92,246,0.4)] bg-gradient-to-r from-[#38bdf8] to-[#8b5cf6] text-white py-5 px-12 text-sm">
+              ▶ ACESSO AO TERMINAL
+            </Link>
+            <a href="#matrix" className="btn-3d btn-3d-dark py-5 px-12 text-sm border border-white/10 hover:border-[#38bdf8]/50">
+              VISÃO TÁTICA
+            </a>
+          </motion.div>
+        </div>
       </section>
 
       {/* ======================= GLOBAL TRACKING WIDGET (GLOBE) ======================= */}
