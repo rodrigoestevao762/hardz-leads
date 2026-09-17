@@ -105,27 +105,19 @@ async function searchEcosia(query: string): Promise<string> {
 }
 
 export async function enrichLeadData(nome: string, cidade: string, uf: string = '') {
-  const queryPadrao = `"${nome}" ${cidade} ${uf}`.trim();
-  
-  // Dispara buscas paralelas em 7 motores diferentes usando Advanced Google Dorks (Hacking OSINT)
-  const safeNome = nome.replace(/"/g, ''); // evita quebra de aspas
+  // Dispara buscas paralelas em 7 motores diferentes
+  const safeNome = nome.replace(/"/g, '').replace(/[()]/g, ''); // limpa pontuação complexa
   const urlNome = safeNome.replace(/\s+/g, '').toLowerCase();
 
+  // Removemos os parênteses (OR) complexos que estavam quebrando as engines HTML
   const [htmlYahoo, htmlBing, htmlDuck, htmlQwant, htmlBrave, htmlAsk, htmlEcosia] = await Promise.all([
-    // Yahoo: Dork intitle e inurl para achar páginas de contato específicas
-    searchYahoo(`intitle:"${safeNome}" (inurl:contato OR inurl:sobre) ${cidade} ${uf}`),
-    // Bing: Dork intext com operadores lógicos para caçar provedores de email públicos
-    searchBing(`"${safeNome}" ${cidade} ("@gmail.com" OR "@hotmail.com" OR "@yahoo.com" OR "@outlook.com")`),
-    // DuckDuckGo: Dork agressiva focada puramente em Instagram (site: e inurl:)
-    searchDuckDuckGo(`site:instagram.com inurl:${urlNome} OR intitle:"${safeNome}" ${cidade}`),
-    // Qwant: Dork focada em Facebook
-    searchQwant(`site:facebook.com intitle:"${safeNome}" ${cidade}`),
-    // Brave: Dork focando em vazamento de planilhas/PDFs com cadastros
-    searchBrave(`"${safeNome}" ${cidade} (filetype:pdf OR filetype:xls OR filetype:csv) "email"`),
-    // Ask: Dork híbrida intitle
-    searchAsk(`intitle:"${safeNome}" ${cidade} (instagram OR facebook OR email)`),
-    // Ecosia: Dork inurl e busca de contatos
-    searchEcosia(`"${safeNome}" ${cidade} inurl:contato OR inurl:contact`)
+    searchYahoo(`"${safeNome}" contato email ${cidade} ${uf}`),
+    searchBing(`"${safeNome}" ${cidade} @gmail.com`),
+    searchDuckDuckGo(`site:instagram.com "${safeNome}" ${cidade}`),
+    searchQwant(`site:facebook.com "${safeNome}" ${cidade}`),
+    searchBrave(`"${safeNome}" ${cidade} email contato`),
+    searchAsk(`"${safeNome}" ${cidade} instagram facebook email`),
+    searchEcosia(`"${safeNome}" ${cidade} contato`)
   ]);
   
   const htmlUnificado = htmlYahoo + " " + htmlBing + " " + htmlDuck + " " + htmlQwant + " " + htmlBrave + " " + htmlAsk + " " + htmlEcosia;
@@ -150,27 +142,25 @@ export async function enrichLeadData(nome: string, cidade: string, uf: string = 
 }
 
 export async function radarInstagram(nicho: string, cidade: string) {
-  // Limpa a palavra "mundial" ou vazia para não quebrar a busca
   const cid = (cidade.toLowerCase() === "mundial" || cidade.trim() === "") ? "" : cidade.trim();
   const nic = nicho.trim() || "empresa";
   
-  // Aprimoramento Mega Brain: Expandir termos comuns
-  const nicExpanded = nic.toLowerCase().includes("clínica") ? `("${nic}" OR "clinic")` : 
-                      nic.toLowerCase().includes("advogado") ? `("${nic}" OR "lawyer" OR "attorney")` : 
-                      nic.toLowerCase().includes("restaurante") ? `("${nic}" OR "restaurant")` : 
-                      nic.toLowerCase().includes("loja") ? `("${nic}" OR "store" OR "shop")` : 
-                      nic.toLowerCase().includes("estética") ? `("${nic}" OR "aesthetics" OR "spa")` : `"${nic}"`;
+  const nicExpanded = nic.toLowerCase().includes("clínica") ? `${nic} clinic` : 
+                      nic.toLowerCase().includes("advogado") ? `${nic} lawyer` : 
+                      nic.toLowerCase().includes("restaurante") ? `${nic} restaurant` : 
+                      nic.toLowerCase().includes("loja") ? `${nic} store` : 
+                      nic.toLowerCase().includes("estética") ? `${nic} spa` : nic;
 
-  const base = `${nicExpanded} ${cid ? `"${cid}"` : ""}`.trim();
+  const base = `${nicExpanded} ${cid}`.trim();
   
-  // Nível Espião: varreduras simultâneas distribuídas por motores diferentes (evita rate limit)
+  // Scrapes simples focados no instagram para garantir extração maciça sem quebrar as engines HTML
   const [h1, h2, h3, h4, h5, h6, h7] = await Promise.all([
-    searchDuckDuckGo(`${base} site:instagram.com`),
-    searchBing(`${base} "instagram.com"`),
-    searchYahoo(`${base} instagram oficial OR official instagram`),
-    searchQwant(`${base} site:instagram.com`),
-    searchBrave(`${base} instagram perfil OR profile`),
-    searchAsk(`"${base}" instagram page`),
+    searchDuckDuckGo(`site:instagram.com ${base}`),
+    searchBing(`${base} instagram.com`),
+    searchYahoo(`${base} instagram oficial`),
+    searchQwant(`site:instagram.com ${base}`),
+    searchBrave(`${base} instagram profile`),
+    searchAsk(`${base} instagram page`),
     searchEcosia(`${base} instagram.com`)
   ]);
   
@@ -223,22 +213,21 @@ export async function radarFoods(nicho: string, cidade: string) {
   const cid = (cidade.toLowerCase() === "mundial" || cidade.trim() === "") ? "" : cidade.trim();
   const nic = nicho.trim() || "restaurante";
   
-  // Aprimoramento Mega Brain: Expandir termos em PT-BR para equivalentes globais (Inglês/Espanhol)
-  const nicExpanded = nic.toLowerCase().includes("restaurante") ? `("${nic}" OR "restaurant" OR "restaurante")` : 
-                      nic.toLowerCase().includes("hamburgueria") ? `("${nic}" OR "burger" OR "hamburguesa")` : 
-                      nic.toLowerCase().includes("pizzaria") ? `("${nic}" OR "pizzeria" OR "pizza")` : `"${nic}"`;
+  const nicExpanded = nic.toLowerCase().includes("restaurante") ? `${nic} restaurant` : 
+                      nic.toLowerCase().includes("hamburgueria") ? `${nic} burger` : 
+                      nic.toLowerCase().includes("pizzaria") ? `${nic} pizzeria` : nic;
 
-  const base = `${nicExpanded} ${cid ? `"${cid}"` : ""}`.trim();
+  const base = `${nicExpanded} ${cid}`.trim();
 
-  // Caça em apps de delivery globais usando 7 motores OSINT
+  // Caça em apps de delivery globais de forma simples para não quebrar scrapers HTML
   const [h1, h2, h3, h4, h5, h6, h7] = await Promise.all([
-    searchDuckDuckGo(`${base} (site:ubereats.com OR site:ifood.com.br OR site:doordash.com OR site:deliveroo.co.uk)`),
-    searchBing(`${base} (site:tripadvisor.com OR site:yelp.com OR site:grubhub.com)`),
-    searchYahoo(`${base} (site:rappi.com OR site:zomato.com OR site:just-eat.com)`),
-    searchQwant(`${base} delivery menu order online`),
-    searchBrave(`${base} "delivery" OR "restaurant"`),
-    searchAsk(`${base} delivery ifood ubereats doordash`),
-    searchEcosia(`${base} restaurant menu online`)
+    searchDuckDuckGo(`site:ubereats.com ${base}`),
+    searchBing(`site:tripadvisor.com ${base}`),
+    searchYahoo(`site:ifood.com.br ${base}`),
+    searchQwant(`${base} delivery menu order`),
+    searchBrave(`${base} delivery restaurant`),
+    searchAsk(`${base} delivery ifood ubereats`),
+    searchEcosia(`${base} restaurant menu`)
   ]);
 
   const htmlUnificado = h1 + " " + h2 + " " + h3 + " " + h4 + " " + h5 + " " + h6 + " " + h7;
