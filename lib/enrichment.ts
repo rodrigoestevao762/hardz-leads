@@ -99,9 +99,11 @@ export async function enrichLeadData(nome: string, cidade: string, uf: string = 
   const links = extractSocialLinks(htmlUnificado);
   
   let fontesUsadas = [];
-  if (htmlDuck.length > 0 || htmlDuckBroad.length > 0) fontesUsadas.push('DuckDuckGo');
+  if (htmlDuck.length > 0) fontesUsadas.push('DuckDuckGo');
   if (htmlYahoo.length > 0) fontesUsadas.push('Yahoo');
-  if (htmlBing.length > 0 || htmlBingBroad.length > 0) fontesUsadas.push('Bing');
+  if (htmlBing.length > 0) fontesUsadas.push('Bing');
+  if (htmlQwant.length > 0) fontesUsadas.push('Qwant');
+  if (htmlBrave.length > 0) fontesUsadas.push('Brave');
   
   return {
     instagram: links.instagram,
