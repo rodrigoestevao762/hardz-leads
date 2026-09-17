@@ -54,8 +54,17 @@ export default function LeadsPage() {
   const [aba, setAba] = useState("contato");
   const [busca, setBusca] = useState("");
   const [msgAberta, setMsgAberta] = useState<Record<string, string>>({});
+  const [copiado, setCopiado] = useState<Record<string, boolean>>({});
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+
+  const handleCopiar = (id: string, texto: string) => {
+    navigator.clipboard.writeText(texto);
+    setCopiado((prev) => ({ ...prev, [id]: true }));
+    setTimeout(() => {
+      setCopiado((prev) => ({ ...prev, [id]: false }));
+    }, 2000);
+  };
 
   const carregar = useCallback(async () => {
     setCarregando(true);
@@ -456,9 +465,9 @@ export default function LeadsPage() {
                   {ocupado === l.id + ":gerar" ? "gerando..." : msgAberta[l.id] ? "↻ regerar" : "✦ gerar mensagem"}
                 </button>
                 {msgAberta[l.id] && (
-                  <button onClick={() => navigator.clipboard.writeText(msgAberta[l.id])}
+                  <button onClick={() => handleCopiar(l.id, msgAberta[l.id])}
                     className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest">
-                    ⧉ copiar
+                    {copiado[l.id] ? "✅ copiado" : "⧉ copiar"}
                   </button>
                 )}
                 {l.instagram && (

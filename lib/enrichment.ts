@@ -144,18 +144,27 @@ export async function radarInstagram(nicho: string, cidade: string) {
   const cid = (cidade.toLowerCase() === "mundial" || cidade.trim() === "") ? "" : cidade.trim();
   const nic = nicho.trim() || "empresa";
   
-  const base = `${nic} ${cid}`.trim();
+  // Aprimoramento Mega Brain: Expandir termos comuns
+  const nicExpanded = nic.toLowerCase().includes("clínica") ? `("${nic}" OR "clinic")` : 
+                      nic.toLowerCase().includes("advogado") ? `("${nic}" OR "lawyer" OR "attorney")` : 
+                      nic.toLowerCase().includes("restaurante") ? `("${nic}" OR "restaurant")` : 
+                      nic.toLowerCase().includes("loja") ? `("${nic}" OR "store" OR "shop")` : 
+                      nic.toLowerCase().includes("estética") ? `("${nic}" OR "aesthetics" OR "spa")` : `"${nic}"`;
+
+  const base = `${nicExpanded} ${cid ? `"${cid}"` : ""}`.trim();
   
   // Nível Espião: varreduras simultâneas distribuídas por motores diferentes (evita rate limit)
-  const [h1, h2, h3, h4, h5] = await Promise.all([
+  const [h1, h2, h3, h4, h5, h6, h7] = await Promise.all([
     searchDuckDuckGo(`${base} site:instagram.com`),
     searchBing(`${base} "instagram.com"`),
-    searchYahoo(`${base} instagram oficial`),
+    searchYahoo(`${base} instagram oficial OR official instagram`),
     searchQwant(`${base} site:instagram.com`),
-    searchBrave(`${base} instagram perfil`)
+    searchBrave(`${base} instagram perfil OR profile`),
+    searchAsk(`"${base}" instagram page`),
+    searchEcosia(`${base} instagram.com`)
   ]);
   
-  const htmlUnificado = h1 + " " + h2 + " " + h3 + " " + h4 + " " + h5;
+  const htmlUnificado = h1 + " " + h2 + " " + h3 + " " + h4 + " " + h5 + " " + h6 + " " + h7;
   
   const instaMatches = htmlUnificado.match(/instagram\.com\/([A-Za-z0-9_.]+)/gi) || [];
   
@@ -203,23 +212,31 @@ export async function radarInstagram(nicho: string, cidade: string) {
 export async function radarFoods(nicho: string, cidade: string) {
   const cid = (cidade.toLowerCase() === "mundial" || cidade.trim() === "") ? "" : cidade.trim();
   const nic = nicho.trim() || "restaurante";
-  const base = `${nic} ${cid}`.trim();
+  
+  // Aprimoramento Mega Brain: Expandir termos em PT-BR para equivalentes globais (Inglês/Espanhol)
+  const nicExpanded = nic.toLowerCase().includes("restaurante") ? `("${nic}" OR "restaurant" OR "restaurante")` : 
+                      nic.toLowerCase().includes("hamburgueria") ? `("${nic}" OR "burger" OR "hamburguesa")` : 
+                      nic.toLowerCase().includes("pizzaria") ? `("${nic}" OR "pizzeria" OR "pizza")` : `"${nic}"`;
 
-  // Caça em apps de delivery usando 5 motores OSINT
-  const [h1, h2, h3, h4, h5] = await Promise.all([
-    searchDuckDuckGo(`${base} site:ifood.com.br OR site:ubereats.com`),
-    searchBing(`${base} site:tripadvisor.com`),
-    searchYahoo(`${base} site:rappi.com.br OR site:zomato.com`),
-    searchQwant(`${base} delivery menu cardápio`),
-    searchBrave(`"${nic}" ${cid} pedir online ifood`)
+  const base = `${nicExpanded} ${cid ? `"${cid}"` : ""}`.trim();
+
+  // Caça em apps de delivery globais usando 7 motores OSINT
+  const [h1, h2, h3, h4, h5, h6, h7] = await Promise.all([
+    searchDuckDuckGo(`${base} (site:ubereats.com OR site:ifood.com.br OR site:doordash.com OR site:deliveroo.co.uk)`),
+    searchBing(`${base} (site:tripadvisor.com OR site:yelp.com OR site:grubhub.com)`),
+    searchYahoo(`${base} (site:rappi.com OR site:zomato.com OR site:just-eat.com)`),
+    searchQwant(`${base} delivery menu order online`),
+    searchBrave(`${base} "delivery" OR "restaurant"`),
+    searchAsk(`${base} delivery ifood ubereats doordash`),
+    searchEcosia(`${base} restaurant menu online`)
   ]);
 
-  const htmlUnificado = h1 + " " + h2 + " " + h3 + " " + h4 + " " + h5;
+  const htmlUnificado = h1 + " " + h2 + " " + h3 + " " + h4 + " " + h5 + " " + h6 + " " + h7;
 
   // Regex para pegar URLs dos sites
   const urlsMatches = htmlUnificado.match(/https?:\/\/(www\.)?([a-zA-Z0-9.-]+)\/([^"'\s<]+)/gi) || [];
 
-  const dominiosAlvo = ['ifood.com.br', 'ubereats.com', 'glovoapp.com', 'tripadvisor', 'rappi.com', 'zomato.com', 'just-eat.com'];
+  const dominiosAlvo = ['ifood', 'ubereats', 'glovoapp', 'tripadvisor', 'rappi', 'zomato', 'just-eat', 'doordash', 'deliveroo', 'grubhub', 'yelp'];
   
   const restaurantes = new Map<string, { nome: string; url: string; fonteStr: string }>();
 
