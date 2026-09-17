@@ -53,8 +53,12 @@ function extractSocialLinks(html: string) {
   });
 
   // Extrai Emails
-  // Remove caracteres percentuais do regex para evitar lixo URL-encoded (como %22+or+%22@hotmail.com)
-  const emailMatches = html.match(/[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
+  // Remove lixo URL-encoded que os motores de busca geram (%22, %2B)
+  const htmlLimpo = html.replace(/%22/g, '"').replace(/%2B/ig, '+').replace(/%40/ig, '@');
+  
+  // Regex RESTRETO: removemos o '+' do prefixo. O '+' é o caractere de 'espaço' em URLs, 
+  // o que causava a captura de buscas inteiras tipo '22+roma+@gmail.com'
+  const emailMatches = htmlLimpo.match(/[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
   
   // Filtra e-mails sujos (falsos positivos dos motores ou imagens)
   const dominiosBloqueados = [
