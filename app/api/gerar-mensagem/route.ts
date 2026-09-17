@@ -15,6 +15,7 @@ export async function POST(req: Request) {
       .from("settings").select("negocio_nome, servico, diferenciais").eq("user_id", user.id).single();
 
     const negocio = settings || { negocio_nome: "HardZ Sites", servico: "Criação de sites profissionais", diferenciais: "Site próprio que aparece no Google, entrega rápida" };
+    if (negocio.negocio_nome === "Prospectando AI") negocio.negocio_nome = "HardZ Sites";
 
     const { texto, fonte } = await gerarMensagem(
       {

@@ -39,45 +39,56 @@ export async function POST(req: Request) {
     }
 
     const cat = getCategoria(categoriaId);
-    const tags = cat
-      ? cat.tags
-      : Array.from(new Set(CATEGORIAS.flatMap((c) => c.tags)));
+    
+    let emp: any[] = [];
+    const outscraperKey = process.env.OUTSCRAPER_API_KEY;
+    
+    if (outscraperKey) {
+      const { buscarOutscraper } = await import("@/lib/outscraper");
+      const catLabel = cat ? cat.label : "Empresa";
+      const q = `${catLabel} em ${cidadeNome}, ${paisNome}`;
+      emp = await buscarOutscraper(q, outscraperKey);
+    } else {
+      const tags = cat
+        ? cat.tags
+        : Array.from(new Set(CATEGORIAS.flatMap((c) => c.tags)));
 
-    // no modo "all", cada elemento recebe a categoria da sua tag OSM
-    const mapaTag = new Map<string, string>();
-    for (const c of CATEGORIAS) {
-      for (const t of c.tags) {
-        const [k, v] = t.split("=");
-        if (!mapaTag.has(`${k}=${v}`)) mapaTag.set(`${k}=${v}`, c.id);
+      // no modo "all", cada elemento recebe a categoria da sua tag OSM
+      const mapaTag = new Map<string, string>();
+      for (const c of CATEGORIAS) {
+        for (const t of c.tags) {
+          const [k, v] = t.split("=");
+          if (!mapaTag.has(`${k}=${v}`)) mapaTag.set(`${k}=${v}`, c.id);
+        }
       }
-    }
-    const classificar = cat
-      ? undefined
-      : (t: Record<string, string>) => {
-          for (const [chave, id] of mapaTag) {
-            const [k, v] = chave.split("=");
-            const valor = t[k];
-            if (!valor) continue;
-            if (v.includes("~")) {
-              const re = new RegExp(v.replace(/~/g, ""), "i");
-              if (re.test(valor)) return id;
-            } else if (valor.toLowerCase() === v.toLowerCase()) {
-              return id;
+      const classificar = cat
+        ? undefined
+        : (t: Record<string, string>) => {
+            for (const [chave, id] of mapaTag) {
+              const [k, v] = chave.split("=");
+              const valor = t[k];
+              if (!valor) continue;
+              if (v.includes("~")) {
+                const re = new RegExp(v.replace(/~/g, ""), "i");
+                if (re.test(valor)) return id;
+              } else if (valor.toLowerCase() === v.toLowerCase()) {
+                return id;
+              }
             }
-          }
-          return "outro";
-        };
+            return "outro";
+          };
 
-    const emp = await buscarEmpresas(
-      cat?.id || "all",
-      tags,
-      ponto.lat,
-      ponto.lng,
-      ponto.radiusM,
-      cidadeNome,
-      paisNome,
-      classificar
-    );
+      emp = await buscarEmpresas(
+        cat?.id || "all",
+        tags,
+        ponto.lat,
+        ponto.lng,
+        ponto.radiusM,
+        cidadeNome,
+        paisNome,
+        classificar
+      );
+    }
 
     const resultados = emp
       .map((e) => ({

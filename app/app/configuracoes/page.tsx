@@ -19,7 +19,7 @@ export default function ConfigPage() {
       if (!user) return;
       const { data } = await sb.from("settings").select("*").eq("user_id", user.id).single();
       setS(data || {
-        negocio_nome: "Prospectando AI",
+        negocio_nome: "HardZ Sites",
         servico: "Criação de sites profissionais",
         diferenciais: "Site próprio que aparece no Google, agendamento integrado, entrega rápida",
         remetente_email: null, resend_api_key: null,
