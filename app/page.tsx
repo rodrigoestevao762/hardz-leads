@@ -9,7 +9,7 @@ import Lenis from "lenis";
 import RealisticGlobe from "@/components/RealisticGlobe";
 
 const PASSOS = [
-  { n: "01", titulo: "UPLINK DE REDE", desc: "Conecte-se ao backbone global. O radar varre nós urbanos em segundos caçando assinaturas corporativas.", cor: "var(--signal)" },
+  { n: "01", titulo: "UPLINK DE REDE", desc: "Conecte-se ao backbone global. O radar varre nós urbanos em segundos caçando assinaturas corporativas.", cor: "#38bdf8" },
   { n: "02", titulo: "ANÁLISE HEURÍSTICA", desc: "Cada alvo recebe um threat-score. Sem ICE (site) = alvo fácil. Nível vulnerável destacado no grid.", cor: "#8b5cf6" },
   { n: "03", titulo: "INFILTRAÇÃO IA", desc: "Geração de payloads de texto via IA neural. A abordagem entra na caixa de entrada traduzida e letal.", cor: "var(--amber)" },
 ];
@@ -69,7 +69,7 @@ export default function CyberpunkLanding() {
   }, []);
 
   return (
-    <main ref={containerRef} className="bg-void relative min-h-screen overflow-hidden text-white font-sans selection:bg-[var(--signal)] selection:text-black">
+    <main ref={containerRef} className="bg-void relative min-h-screen overflow-hidden text-white font-sans selection:bg-[#38bdf8] selection:text-black">
       
       {/* Background Parallax Image - Satellite Slider */}
       <motion.div 
@@ -108,21 +108,34 @@ export default function CyberpunkLanding() {
       <section className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-6 text-center pt-20">
         
         {/* Subtle top glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-white opacity-5 blur-[120px] pointer-events-none rounded-full" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#38bdf8] opacity-15 blur-[120px] pointer-events-none rounded-full" />
 
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2, duration: 0.8 }}
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-medium tracking-widest text-white/80"
+          className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#38bdf8]/30 bg-[#38bdf8]/10 px-4 py-1.5 text-xs font-medium tracking-widest text-[#38bdf8]"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8] animate-pulse shadow-[0_0_8px_#38bdf8]" />
           SISTEMA DE VARREDURA GLOBAL ONLINE
         </motion.div>
 
-        <h1 ref={heroTextRef} className="font-display text-5xl sm:text-6xl md:text-8xl font-black tracking-tight text-white leading-[1.1] mb-6">
-          DOMINE O <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
-            CYBERESPAÇO.
-          </span>
+        <h1 ref={heroTextRef} className="font-display text-5xl sm:text-6xl md:text-8xl font-black tracking-tight text-white leading-[1.1] mb-6 flex flex-col items-center">
+          <span>DOMINE O</span>
+          <div className="flex text-transparent bg-clip-text bg-gradient-to-b from-[#38bdf8] to-[#0284c7] drop-shadow-[0_0_20px_rgba(56,189,248,0.3)] mt-2">
+            {"CYBERESPAÇO.".split("").map((char, index) => (
+              <motion.span
+                key={index}
+                whileHover={{ 
+                  y: -10, 
+                  color: "#fff",
+                  textShadow: "0px 10px 20px rgba(56,189,248,0.8)",
+                  transition: { duration: 0.2 } 
+                }}
+                className="inline-block cursor-crosshair transition-colors duration-300"
+              >
+                {char}
+              </motion.span>
+            ))}
+          </div>
         </h1>
 
         <motion.p 
@@ -135,20 +148,20 @@ export default function CyberpunkLanding() {
 
         <motion.div 
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-          className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
+          className="flex flex-col sm:flex-row gap-5 w-full sm:w-auto"
         >
-          <Link href="/login" className="flex items-center justify-center px-8 py-4 rounded-xl bg-white text-black font-bold tracking-widest uppercase text-sm hover:bg-gray-200 transition-colors shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-            ▶ ACESSO AO TERMINAL
+          <Link href="/login" className="btn-3d px-10 py-5 text-[11px] rounded-xl text-[#082f49] shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),0_6px_0_#0284c7,0_8px_30px_rgba(56,189,248,0.4)]" style={{ background: "linear-gradient(180deg, #38bdf8 0%, #0284c7 100%)" }}>
+            <span className="mr-2">▶</span> ACESSO AO TERMINAL
           </Link>
-          <a href="#matrix" className="flex items-center justify-center px-8 py-4 rounded-xl border border-white/10 bg-white/5 text-white font-bold tracking-widest uppercase text-sm hover:bg-white/10 transition-colors">
+          <a href="#matrix" className="btn-3d btn-3d-dark px-10 py-5 text-[11px] rounded-xl border border-white/10 hover:border-[#38bdf8]/50">
             VISÃO TÁTICA
           </a>
         </motion.div>
       </section>
 
       {/* ======================= GLOBAL TRACKING WIDGET (GLOBE) ======================= */}
-      <section className="relative z-10 border-y border-[var(--signal)]/20 bg-black/80 backdrop-blur-3xl overflow-hidden py-16 md:py-32">
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(45,255,180,0.15)_0%,transparent_60%)]" />
+      <section className="relative z-10 border-y border-[#38bdf8]/20 bg-black/80 backdrop-blur-3xl overflow-hidden py-16 md:py-32">
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(56,189,248,0.15)_0%,transparent_60%)]" />
         
         <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-12 items-center relative z-10">
           {/* Globe Container */}
@@ -157,8 +170,8 @@ export default function CyberpunkLanding() {
             
             {/* Holographic Overlays */}
             <div className="absolute top-6 left-6 pointer-events-none z-40">
-              <div className="mono text-[var(--signal)] text-[10px] tracking-widest flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[var(--signal)] animate-pulse" />
+              <div className="mono text-[#38bdf8] text-[10px] tracking-widest flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#38bdf8] animate-pulse" />
                 GLOBAL UPLINK ACTIVE
               </div>
               <div className="mono text-white/40 text-[9px] mt-1">SCANNING NEURAL NETWORKS...</div>
@@ -172,17 +185,17 @@ export default function CyberpunkLanding() {
 
           {/* Globe Content */}
           <div className="cyber-reveal">
-            <div className="mono text-[var(--signal)] text-xs tracking-[0.4em] mb-4">MÓDULO DE RADAR ESPACIAL</div>
+            <div className="mono text-[#38bdf8] text-xs tracking-[0.4em] mb-4">MÓDULO DE RADAR ESPACIAL</div>
             <h2 className="headline text-4xl md:text-5xl font-black uppercase leading-tight mb-6">
-              Varredura de <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--signal)] to-cyan-500">Nível Global</span>
+              Varredura de <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#38bdf8] to-cyan-500">Nível Global</span>
             </h2>
             <p className="text-[var(--ink-dim)] mb-8 leading-relaxed">
               O sistema não se limita a fronteiras. Interaja com o globo holográfico para visualizar concentrações de alvos B2B espalhados pelos principais polos tecnológicos e comerciais do mundo. Onde houver uma empresa desconectada, nós a encontraremos.
             </p>
             
             <div className="flex flex-col gap-4">
-              <div className="p-4 border border-white/5 rounded-xl bg-white/[0.02] flex items-center gap-4 hover:border-[var(--signal)]/30 transition-colors">
-                <div className="w-12 h-12 rounded-full border border-[var(--signal)]/50 flex items-center justify-center text-[var(--signal)] shrink-0">
+              <div className="p-4 border border-white/5 rounded-xl bg-white/[0.02] flex items-center gap-4 hover:border-[#38bdf8]/30 transition-colors">
+                <div className="w-12 h-12 rounded-full border border-[#38bdf8]/50 flex items-center justify-center text-[#38bdf8] shrink-0">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
                 </div>
                 <div>
@@ -209,7 +222,7 @@ export default function CyberpunkLanding() {
       <section id="matrix" className="relative z-10 mx-auto max-w-7xl px-6 py-32">
         <div className="cyber-reveal text-center mb-16">
           <h2 className="headline text-4xl font-black uppercase tracking-tight text-white">
-            Protocolos de <span className="text-[var(--signal)]">Infiltração</span>
+            Protocolos de <span className="text-[#38bdf8]">Infiltração</span>
           </h2>
           <p className="mono mt-4 text-[var(--ink-dim)] tracking-widest text-xs">MECANISMOS DE CONVERSÃO EXTREMA</p>
         </div>
@@ -217,8 +230,8 @@ export default function CyberpunkLanding() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {PASSOS.map((p, i) => (
             <div key={p.n} className="cyber-reveal group relative p-px rounded-3xl bg-gradient-to-b from-white/10 to-transparent overflow-hidden">
-              <div className="absolute inset-0 bg-[var(--signal)] opacity-0 group-hover:opacity-20 transition-opacity duration-700 blur-2xl" />
-              <div className="relative h-full bg-black/80 backdrop-blur-xl rounded-[23px] p-8 flex flex-col justify-between border border-white/5 group-hover:border-[var(--signal)]/30 transition-colors">
+              <div className="absolute inset-0 bg-[#38bdf8] opacity-0 group-hover:opacity-20 transition-opacity duration-700 blur-2xl" />
+              <div className="relative h-full bg-black/80 backdrop-blur-xl rounded-[23px] p-8 flex flex-col justify-between border border-white/5 group-hover:border-[#38bdf8]/30 transition-colors">
                 
                 <div>
                   <div className="mono text-5xl font-black text-white/5 mb-6 group-hover:text-white/10 transition-colors">
@@ -231,7 +244,7 @@ export default function CyberpunkLanding() {
                 </div>
 
                 <div className="mt-8 flex items-center justify-between">
-                  <div className="h-0.5 w-12 bg-white/10 group-hover:bg-[var(--signal)] group-hover:w-20 transition-all duration-500" />
+                  <div className="h-0.5 w-12 bg-white/10 group-hover:bg-[#38bdf8] group-hover:w-20 transition-all duration-500" />
                   <span className="mono text-[10px]" style={{ color: p.cor }}>sys.run()</span>
                 </div>
               </div>
@@ -241,11 +254,11 @@ export default function CyberpunkLanding() {
       </section>
 
       {/* ======================= CTA FINAL REDESENHADO ======================= */}
-      <section className="relative z-10 py-32 border-t border-[var(--signal)]/20 bg-[radial-gradient(ellipse_at_bottom,rgba(45,255,180,0.1)_0%,black_70%)]">
+      <section className="relative z-10 py-32 border-t border-[#38bdf8]/20 bg-[radial-gradient(ellipse_at_bottom,rgba(56,189,248,0.1)_0%,black_70%)]">
         <div className="mx-auto max-w-4xl px-6 text-center cyber-reveal">
-          <div className="w-24 h-24 mx-auto border border-[var(--signal)]/30 rounded-full flex items-center justify-center mb-8 relative">
-            <div className="absolute inset-0 border border-[var(--signal)] rounded-full animate-ping opacity-20" />
-            <svg className="w-8 h-8 text-[var(--signal)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+          <div className="w-24 h-24 mx-auto border border-[#38bdf8]/30 rounded-full flex items-center justify-center mb-8 relative">
+            <div className="absolute inset-0 border border-[#38bdf8] rounded-full animate-ping opacity-20" />
+            <svg className="w-8 h-8 text-[#38bdf8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
           </div>
           
           <h2 className="headline text-5xl md:text-6xl font-black uppercase text-white mb-6">
@@ -287,15 +300,15 @@ function SatelliteBackground() {
         <motion.div
           key={index}
           initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 0.3, scale: 1 }}
+          animate={{ opacity: 0.6, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 3, ease: "easeInOut" }}
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url('${SATELLITE_IMAGES[index]}')` }}
         />
       </AnimatePresence>
-      <div className="absolute inset-0 bg-gradient-to-b from-[#030603]/30 via-[#030603]/80 to-[#030603] backdrop-blur-[2px]" />
-      <div className="bg-grid absolute inset-0 opacity-40 mix-blend-overlay" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#030603]/10 via-[#030603]/40 to-[#030603]/90" />
+      <div className="bg-grid absolute inset-0 opacity-20 mix-blend-overlay" />
     </div>
   );
 }
