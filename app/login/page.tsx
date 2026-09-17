@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 
 function MiniRadar() {
@@ -53,36 +54,63 @@ export default function LoginPage() {
       {/* Painel esquerdo — atmosfera */}
       <section className="relative hidden flex-col justify-between overflow-hidden border-r border-[var(--line)] p-12 lg:flex">
         <div className="bg-grid pointer-events-none absolute inset-0" />
-        <Link href="/" className="mono relative flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-[var(--ink-dim)] transition hover:text-[var(--signal)]">
+        
+        {/* Particles Effect */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full bg-white"
+            style={{
+              width: Math.random() * 4 + 2,
+              height: Math.random() * 4 + 2,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              opacity: Math.random() * 0.15 + 0.1,
+            }}
+            animate={{ y: [-15, 15, -15], opacity: [0.1, 0.3, 0.1] }}
+            transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut" }}
+          />
+        ))}
+
+        <Link href="/" className="mono relative flex w-fit items-center gap-3 text-xs uppercase tracking-[0.3em] text-[var(--ink-dim)] transition hover:text-[var(--signal)]">
           ← voltar ao site
         </Link>
         <div className="relative flex flex-1 items-center justify-center py-12">
-          <div className="float-slow">
+          <motion.div
+            animate={{ y: [-10, 10, -10] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          >
             <MiniRadar />
-          </div>
+          </motion.div>
         </div>
         <div className="relative">
-          <p className="eyebrow reveal">Sala de controle</p>
-          <h2 className="headline reveal d1 mt-4 max-w-md text-3xl font-bold leading-tight">
+          <p className="eyebrow">Sala de controle</p>
+          <h2 className="headline mt-4 max-w-md text-3xl font-bold leading-tight">
             Todo dia, milhares de negócios entram no ar <span className="text-signal-glow">sem um site.</span>
           </h2>
-          <p className="reveal d2 mono mt-6 flex flex-wrap gap-x-8 gap-y-2 text-[10px] uppercase tracking-widest text-[var(--ink-faint)]">
-            <span>· openstreetmap ao vivo</span>
-            <span>· score automático</span>
-            <span>· IA multilíngue</span>
-          </p>
+          <div className="mono mt-6 flex flex-wrap gap-x-8 gap-y-2 text-[10px] uppercase tracking-widest text-[var(--ink-faint)]">
+            <motion.span initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>· openstreetmap ao vivo</motion.span>
+            <motion.span initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 }}>· score automático</motion.span>
+            <motion.span initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>· IA multilíngue</motion.span>
+          </div>
         </div>
       </section>
 
       {/* Formulário */}
       <section className="relative flex items-center justify-center px-5 py-12">
-        <div className="w-full max-w-sm">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-sm"
+        >
           <div className="mb-8 flex items-center gap-3 lg:hidden">
             <div className="radar h-10 w-10"><div className="radar-sweep" /></div>
             <Link href="/" className="headline text-sm font-bold uppercase tracking-widest">
               Prospectando<span className="text-signal-glow">AI</span>
             </Link>
           </div>
+          
           <p className="eyebrow">{modo === "login" ? "Acesso" : "Novo operador"}</p>
           <h1 className="headline mt-3 text-2xl font-bold">
             {modo === "login" ? "Bem-vindo de volta." : "Crie sua conta gratuita."}
@@ -92,58 +120,92 @@ export default function LoginPage() {
           </p>
 
           <form onSubmit={entrar} className="mt-8 space-y-4">
-            <input
-              type="email" required placeholder="E-mail" value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="field w-full rounded-xl px-4 py-3 text-sm"
-            />
-            <input
-              type="password" required minLength={6} placeholder="Senha (mín. 6 caracteres)" value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              className="field w-full rounded-xl px-4 py-3 text-sm"
-            />
-            <button
-              type="submit" disabled={carregando}
-              className="btn-signal w-full rounded-xl py-3.5 text-xs uppercase tracking-widest disabled:opacity-50"
-            >
-              {carregando ? "Conectando..." : modo === "login" ? "Entrar no radar" : "Criar conta"}
-            </button>
+            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
+              <input
+                type="email" required placeholder="E-mail" value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="field field-premium w-full rounded-xl px-4 py-3 text-sm"
+              />
+            </motion.div>
+            <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+              <input
+                type="password" required minLength={6} placeholder="Senha (mín. 6 caracteres)" value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                className="field field-premium w-full rounded-xl px-4 py-3 text-sm"
+              />
+            </motion.div>
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="pt-2">
+              <button
+                type="submit" disabled={carregando}
+                className="btn-3d btn-3d-primary w-full py-3.5 text-xs font-bold"
+              >
+                {carregando ? "Conectando..." : modo === "login" ? "Entrar no radar" : "Criar conta"}
+              </button>
+            </motion.div>
           </form>
 
-          <div className="my-5 flex items-center gap-4">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="my-6 flex items-center gap-4">
             <div className="glow-line flex-1" />
             <span className="mono text-[10px] uppercase tracking-widest text-[var(--ink-faint)]">ou</span>
             <div className="glow-line flex-1" />
-          </div>
+          </motion.div>
 
-          <button
-            onClick={google}
-            className="btn-ghost mono w-full rounded-xl py-3.5 text-xs uppercase tracking-widest"
-          >
-            Continuar com Google
-          </button>
-
-          <p className="mt-7 text-center text-sm text-[var(--ink-dim)]">
-            {modo === "login" ? "Ainda não opera o radar? " : "Já tem conta? "}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
             <button
-              className="text-[var(--signal)] transition hover:underline"
-              onClick={() => { setModo(modo === "login" ? "cadastro" : "login"); setErro(null); setMsg(null); }}
+              onClick={google}
+              className="btn-3d btn-3d-ghost w-full py-3.5 text-xs"
             >
-              {modo === "login" ? "Cadastre-se" : "Entrar"}
+              <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-4 h-4 mr-2 inline-block -mt-1" />
+              Continuar com Google
             </button>
-          </p>
+          </motion.div>
 
-          {erro && (
-            <p className="mono mt-4 rounded-lg border border-[var(--alert)]/40 bg-[var(--alert)]/10 px-3 py-2 text-xs text-[var(--alert)]">
-              {erro}
-            </p>
-          )}
-          {msg && (
-            <p className="mono mt-4 rounded-lg border border-[var(--signal)]/40 bg-[var(--signal)]/10 px-3 py-2 text-xs text-[var(--signal)]">
-              {msg}
-            </p>
-          )}
-        </div>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="mt-8 relative p-1 rounded-xl bg-white/5 flex">
+            <button
+              className={`flex-1 relative z-10 py-2.5 text-xs font-medium uppercase tracking-widest transition-colors ${modo === "login" ? "text-[var(--void)]" : "text-[var(--ink-dim)] hover:text-white"}`}
+              onClick={() => { setModo("login"); setErro(null); setMsg(null); }}
+            >
+              Login
+            </button>
+            <button
+              className={`flex-1 relative z-10 py-2.5 text-xs font-medium uppercase tracking-widest transition-colors ${modo === "cadastro" ? "text-[var(--void)]" : "text-[var(--ink-dim)] hover:text-white"}`}
+              onClick={() => { setModo("cadastro"); setErro(null); setMsg(null); }}
+            >
+              Cadastro
+            </button>
+            <motion.div
+              className="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg z-0"
+              initial={false}
+              animate={{ left: modo === "login" ? "4px" : "calc(50%)" }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+            />
+          </motion.div>
+
+          <AnimatePresence mode="wait">
+            {erro && (
+              <motion.p
+                key="erro"
+                initial={{ opacity: 0, height: 0, y: -10 }}
+                animate={{ opacity: 1, height: "auto", y: 0 }}
+                exit={{ opacity: 0, height: 0, y: -10 }}
+                className="mono mt-5 rounded-lg border border-[var(--alert)]/40 bg-[var(--alert)]/10 px-3 py-2.5 text-xs text-[var(--alert)] overflow-hidden"
+              >
+                {erro}
+              </motion.p>
+            )}
+            {msg && (
+              <motion.p
+                key="msg"
+                initial={{ opacity: 0, height: 0, y: -10 }}
+                animate={{ opacity: 1, height: "auto", y: 0 }}
+                exit={{ opacity: 0, height: 0, y: -10 }}
+                className="mono mt-5 rounded-lg border border-[var(--signal)]/40 bg-[var(--signal)]/10 px-3 py-2.5 text-xs text-[var(--signal)] overflow-hidden"
+              >
+                {msg}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </section>
     </main>
   );

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { CATEGORIAS } from "@/lib/categorias";
 
@@ -340,40 +341,72 @@ export default function LeadsPage() {
     frio: visiveis.filter((l) => l.nivel === "frio").length,
   };
 
+  const NIVEL_ACCENT: Record<Lead["nivel"], string> = {
+    quente: "#ff5d5d",
+    morno: "#ffb02d",
+    frio: "#55685f",
+  };
+
   return (
     <div>
       {/* Header + métricas */}
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="mb-6 flex flex-wrap items-end justify-between gap-4"
+      >
         <div>
           <p className="eyebrow">Alvos travados</p>
-          <h1 className="headline mt-2 text-2xl font-bold">
+          <h1 className="headline mt-1 text-2xl font-bold">
             Leads <span className="mono text-base font-normal text-[var(--ink-faint)]">({visiveis.length})</span>
           </h1>
         </div>
-        <div className="mono flex gap-5 text-[11px] uppercase tracking-widest">
-          <span className="text-[var(--alert)]">🔥 {contagem.quente} quentes</span>
-          <span className="text-[var(--amber)]">◐ {contagem.morno} mornos</span>
-          <span className="text-[var(--ink-faint)]">○ {contagem.frio} frios</span>
+        <div className="mono flex gap-4 text-[11px] uppercase tracking-widest flex-wrap">
+          <span className="flex items-center gap-1.5 text-[var(--alert)]">
+            <span className="pulse-dot" style={{ background: 'var(--alert)', boxShadow: '0 0 0 0 rgba(255,93,93,0.5)' }} />
+            {contagem.quente} quentes
+          </span>
+          <span className="flex items-center gap-1.5 text-[var(--amber)]">
+            <span style={{ width:7, height:7, borderRadius:'50%', background:'var(--amber)', display:'inline-block' }} />
+            {contagem.morno} mornos
+          </span>
+          <span className="flex items-center gap-1.5 text-[var(--ink-faint)]">
+            <span style={{ width:7, height:7, borderRadius:'50%', border:'1px solid var(--ink-faint)', display:'inline-block' }} />
+            {contagem.frio} frios
+          </span>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Abas de status */}
-      <div className="mb-4 -mx-4 px-4 md:mx-0 md:px-0 flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-hide snap-x">
+      {/* Abas de status com indicador deslizante */}
+      <div className="mb-4 -mx-4 px-4 md:mx-0 md:px-0 flex items-center gap-1 overflow-x-auto whitespace-nowrap scrollbar-hide snap-x relative">
         {ABAS.map((a) => (
           <button key={a.id} onClick={() => setAba(a.id)}
-            className={`mono shrink-0 snap-start rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest transition ${
-              aba === a.id
-                ? "bg-[rgba(45,255,180,0.12)] text-[var(--signal)] shadow-[inset_0_0_0_1px_rgba(45,255,180,0.35)]"
-                : "text-[var(--ink-dim)] hover:bg-white/5 hover:text-[var(--ink)]"
-            }`}>
-            {a.label}
-            <span className={`ml-2 ${aba === a.id ? "text-[var(--signal)]" : "text-[var(--ink-faint)]"}`}>{contagemAba[a.id]}</span>
+            className={`mono shrink-0 snap-start rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest transition-all relative ${
+              aba === a.id ? "text-[var(--signal)]" : "text-[var(--ink-dim)] hover:text-[var(--ink)]"
+            }`}
+          >
+            {aba === a.id && (
+              <motion.span
+                layoutId="aba-indicator"
+                className="absolute inset-0 rounded-lg"
+                style={{ background: 'rgba(45,255,180,0.1)', border: '1px solid rgba(45,255,180,0.3)' }}
+                transition={{ type: "spring", stiffness: 500, damping: 35 }}
+              />
+            )}
+            <span className="relative z-10">{a.label}</span>
+            <span className={`relative z-10 ml-2 ${aba === a.id ? "text-[var(--signal)]" : "text-[var(--ink-faint)]"}`}>{contagemAba[a.id]}</span>
           </button>
         ))}
       </div>
 
-      {/* Filtros */}
-      <div className="panel mb-5 flex flex-wrap items-center gap-2 rounded-2xl p-3">
+      {/* Filtros + Ações 3D */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.4 }}
+        className="panel mb-5 flex flex-wrap items-center gap-2 rounded-2xl p-3"
+      >
         <select value={fCat} onChange={(e) => setFCat(e.target.value)} className="field mono rounded-lg px-2.5 py-1.5 text-xs">
           <option value="all">Todas categorias</option>
           {CATEGORIAS.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
@@ -383,47 +416,85 @@ export default function LeadsPage() {
         </select>
         <input value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar nome/cidade..."
           className="field mono min-w-44 flex-1 rounded-lg px-3 py-1.5 text-xs" />
-        <button onClick={enriquecerEmLote} disabled={!!ocupado} className="button bg-[rgba(45,255,180,0.12)] text-[var(--signal)] rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_rgba(45,255,180,0.35)] hover:bg-[rgba(45,255,180,0.2)] disabled:opacity-50">
-          Enriquecer Lote
+        <button onClick={enriquecerEmLote} disabled={!!ocupado} className="btn-3d btn-3d-ghost">
+          ⚡ Enriquecer Lote
         </button>
-        <button onClick={disparoEmLote} disabled={!!ocupado} className="button bg-[#c9974c]/15 text-[#c9974c] rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_rgba(201,151,76,0.35)] hover:bg-[#c9974c]/25 disabled:opacity-50">
-          Disparo (E-mails)
+        <button onClick={disparoEmLote} disabled={!!ocupado} className="btn-3d btn-3d-amber">
+          ✉ Disparo E-mails
         </button>
-        <button onClick={gerarDMsEmLote} disabled={!!ocupado} className="button bg-gradient-to-r from-[#833ab4]/30 via-[#d6249f]/30 to-[#fcaf45]/30 text-white rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest hover:brightness-125 disabled:opacity-50">
-          Gerar DMs (Insta)
+        <button onClick={gerarDMsEmLote} disabled={!!ocupado} className="btn-3d btn-3d-insta">
+          📸 Gerar DMs
         </button>
-        <button onClick={limparSemRedes} disabled={!!ocupado} className="button bg-[var(--alert)]/10 text-[var(--alert)] rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_var(--alert)] hover:bg-[var(--alert)]/20 disabled:opacity-50">
-          Limpar s/ Insta
+        <button onClick={limparSemRedes} disabled={!!ocupado} className="btn-3d btn-3d-dark">
+          🗑 s/ Insta
         </button>
-        <button onClick={limparTodos} disabled={!!ocupado} className="button bg-black text-white rounded-lg px-4 py-1.5 text-xs font-semibold mono uppercase tracking-widest shadow-[inset_0_0_0_1px_rgba(255,255,255,0.2)] hover:bg-white/10 disabled:opacity-50 transition">
+        <button onClick={limparTodos} disabled={!!ocupado} className="btn-3d btn-3d-danger">
           ⚠️ Limpar Tudo
         </button>
-      </div>
+      </motion.div>
 
-      {aviso && (
-        <p className="mono mb-4 rounded-xl border border-[var(--signal)]/30 bg-[var(--signal)]/8 px-4 py-2.5 text-xs text-[var(--signal)]">
-          ▸ {aviso}
-        </p>
-      )}
+      {/* Aviso / Toast */}
+      <AnimatePresence>
+        {aviso && (
+          <motion.div
+            initial={{ opacity: 0, y: -12, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.97 }}
+            transition={{ duration: 0.25 }}
+            className="mono mb-4 flex items-center gap-2 rounded-xl border border-[var(--signal)]/25 bg-[var(--signal)]/6 px-4 py-3 text-xs text-[var(--signal)]"
+          >
+            <span className="pulse-dot shrink-0" />
+            <span>{aviso}</span>
+            <button onClick={() => setAviso(null)} className="ml-auto shrink-0 opacity-50 hover:opacity-100 transition-opacity">✕</button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Loading */}
       {carregando && (
-        <p className="mono py-16 text-center text-xs uppercase tracking-widest text-[var(--ink-faint)]">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="mono py-16 text-center text-xs uppercase tracking-widest text-[var(--ink-faint)]"
+        >
           <span className="pulse-dot mr-2 inline-block align-middle" /> varrendo a base...
-        </p>
+        </motion.p>
       )}
+
+      {/* Empty state */}
       {!carregando && visiveis.length === 0 && (
-        <div className="panel rounded-2xl border-dashed py-20 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="panel rounded-2xl border-dashed py-20 text-center"
+        >
+          <div className="mb-4 flex justify-center">
+            <div className="radar" style={{ width: 60, height: 60, opacity: 0.5 }}>
+              <div className="radar-sweep" />
+            </div>
+          </div>
           <p className="mono text-xs uppercase tracking-widest text-[var(--ink-faint)]">radar limpo — nenhum lead nesta visão</p>
-          <a href="/app/busca" className="mono mt-4 inline-block text-xs uppercase tracking-widest text-[var(--signal)] hover:underline">
+          <a href="/app/busca" className="btn-3d btn-3d-ghost mt-6 inline-flex">
             ▸ escanear uma cidade agora
           </a>
-        </div>
+        </motion.div>
       )}
 
+      {/* Lead Cards */}
       <div className="flex flex-col gap-3">
-        {visiveis.map((l) => {
+        {visiveis.map((l, i) => {
           const est = NIVEL_ESTILO[l.nivel];
+          const accent = NIVEL_ACCENT[l.nivel];
           return (
-            <div key={l.id} className={`panel panel-hover rounded-2xl border-l-2 p-4 ${est.borda}`}>
+            <motion.div
+              key={l.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: Math.min(i * 0.04, 0.5), duration: 0.35, ease: "easeOut" }}
+              className="lead-card p-4"
+              style={{ '--lead-accent': accent } as React.CSSProperties}
+            >
+              {/* Header do card */}
               <div className="flex flex-wrap items-center gap-2.5">
                 <h2 className="font-semibold tracking-tight">{l.nome}</h2>
                 <span className={`badge ${est.badge}`}>{est.icone} {l.nivel} · {l.score}</span>
@@ -434,30 +505,45 @@ export default function LeadsPage() {
                   ◎ {l.cidade}{l.pais ? `, ${l.pais}` : ""}
                 </span>
               </div>
+
+              {/* Dados de contato */}
               <div className="mono mt-2.5 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs">
                 {l.email ? (
                   <span className="flex items-center gap-1.5 text-[var(--ink)]">
-                    <span className="text-[var(--signal)]">✉</span>
+                    <span style={{ color: 'var(--signal)' }}>✉</span>
                     <input defaultValue={l.email} className="w-52 rounded border border-transparent bg-transparent outline-none transition hover:border-[var(--line-strong)] focus:border-[var(--signal)]" onBlur={(e) => e.target.value !== l.email && atualizar(l.id, { email: e.target.value })} />
                   </span>
                 ) : <span className="text-[var(--ink-faint)]">✉ sem e-mail</span>}
-                {l.instagram ? <span className="text-[#e879f9]">◆ @{l.instagram.replace("@", "")}</span> : <span className="text-[var(--ink-faint)]">◆ sem Instagram</span>}
+                {l.instagram ? <span style={{ color: '#e879f9' }}>◆ @{l.instagram.replace("@", "")}</span> : <span className="text-[var(--ink-faint)]">◆ sem Instagram</span>}
                 {l.website ? <span className="text-[var(--ink-faint)]">▣ tem site</span> : <span className="font-semibold text-[var(--signal)]">▣ sem site ✓</span>}
                 <select value={l.status} onChange={(e) => atualizar(l.id, { status: e.target.value as Lead["status"] })}
                   className="field ml-auto rounded-lg px-2 py-1 text-[11px]">
                   {Object.entries(STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </select>
               </div>
-              {msgAberta[l.id] && (
-                <textarea value={msgAberta[l.id]} onChange={(e) => setMsgAberta((m) => ({ ...m, [l.id]: e.target.value }))}
-                  rows={4}
-                  className="field mt-3 w-full rounded-xl p-3.5 text-sm leading-relaxed" />
-              )}
+
+              {/* Textarea de mensagem */}
+              <AnimatePresence>
+                {msgAberta[l.id] && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25 }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <textarea value={msgAberta[l.id]} onChange={(e) => setMsgAberta((m) => ({ ...m, [l.id]: e.target.value }))}
+                      rows={4}
+                      className="field mt-3 w-full rounded-xl p-3.5 text-sm leading-relaxed" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Botões de ação */}
               <div className="mt-3.5 flex flex-wrap gap-2">
                 {l.email && l.status !== "enviado" && l.status !== "respondido" && l.status !== "cliente" && (
-                  <button onClick={() => enviarAuto(l)} disabled={!!ocupado}
-                    className="mono rounded-lg bg-[var(--signal)]/15 px-3.5 py-2 text-[10px] uppercase tracking-widest text-[var(--signal)] shadow-[inset_0_0_0_1px_rgba(45,255,180,0.4)] transition hover:bg-[var(--signal)]/25 disabled:opacity-50">
-                    {ocupado === l.id + ":auto" ? "enviando..." : "⚡ enviar e-mail"}
+                  <button onClick={() => enviarAuto(l)} disabled={!!ocupado} className="btn-3d btn-3d-primary">
+                    {ocupado === l.id + ":auto" ? "enviando..." : "⚡ Enviar E-mail"}
                   </button>
                 )}
                 {l.status === "enviado" && (
@@ -465,48 +551,48 @@ export default function LeadsPage() {
                     ✓ {l.canal === "dm" ? "DM enviada" : "e-mail enviado"}
                   </span>
                 )}
-                <button onClick={() => enriquecerLead(l)} disabled={!!ocupado}
-                  className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest text-[#e879f9] transition hover:bg-white/5 disabled:opacity-50">
-                  {ocupado === l.id + ":enriquecer" ? "buscando..." : "🔍 enriquecer"}
+                <button onClick={() => enriquecerLead(l)} disabled={!!ocupado} className="btn-3d btn-3d-ghost" style={{ color: '#e879f9', borderColor: 'rgba(232,121,249,0.3)' }}>
+                  {ocupado === l.id + ":enriquecer" ? "buscando..." : "🔍 Enriquecer"}
                 </button>
-                <button onClick={() => gerar(l)} disabled={!!ocupado}
-                  className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest disabled:opacity-50">
-                  {ocupado === l.id + ":gerar" ? "gerando..." : msgAberta[l.id] ? "↻ regerar" : "✦ gerar mensagem"}
+                <button onClick={() => gerar(l)} disabled={!!ocupado} className="btn-3d btn-3d-ghost">
+                  {ocupado === l.id + ":gerar" ? "gerando..." : msgAberta[l.id] ? "↻ Regerar" : "✦ Gerar Mensagem"}
                 </button>
                 {msgAberta[l.id] && (
-                  <button onClick={() => handleCopiar(l.id, msgAberta[l.id])}
-                    className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest">
-                    {copiado[l.id] ? "✅ copiado" : "⧉ copiar"}
+                  <button onClick={() => handleCopiar(l.id, msgAberta[l.id])} className="btn-3d btn-3d-dark">
+                    {copiado[l.id] ? "✅ copiado" : "⧉ Copiar"}
                   </button>
                 )}
                 {l.instagram && (
-                  <button onClick={() => abrirDM(l)}
-                    className="mono rounded-lg bg-gradient-to-r from-[#833ab4]/80 via-[#d6249f]/80 to-[#fcaf45]/80 px-3.5 py-2 text-[10px] uppercase tracking-widest text-white transition hover:brightness-110">
+                  <button onClick={() => abrirDM(l)} className="btn-3d btn-3d-insta">
                     📸 Instagram
                   </button>
                 )}
                 {l.telefone && (
-                  <button onClick={() => abrirWhatsApp(l)}
-                    className="mono rounded-lg bg-[#25D366]/80 px-3.5 py-2 text-[10px] uppercase tracking-widest text-white transition hover:brightness-110">
+                  <button onClick={() => abrirWhatsApp(l)} className="btn-3d" style={{
+                    background: 'linear-gradient(160deg, #25D366, #128C7E)',
+                    color: '#fff',
+                    boxShadow: '0 4px 0 #075E54, 0 8px 24px rgba(37,211,102,0.3)',
+                  }}>
                     💬 WhatsApp
                   </button>
                 )}
                 {l.facebook && (
-                  <button onClick={() => abrirFacebook(l)}
-                    className="mono rounded-lg bg-[#1877F2]/80 px-3.5 py-2 text-[10px] uppercase tracking-widest text-white transition hover:brightness-110">
+                  <button onClick={() => abrirFacebook(l)} className="btn-3d" style={{
+                    background: 'linear-gradient(160deg, #4267B2, #1877F2)',
+                    color: '#fff',
+                    boxShadow: '0 4px 0 #1a3a7a, 0 8px 24px rgba(24,119,242,0.3)',
+                  }}>
                     📘 Facebook
                   </button>
                 )}
-                <button onClick={() => router.push(`/app/editor/${l.id}`)}
-                  className="mono rounded-lg bg-[#c9974c]/15 px-3.5 py-2 text-[10px] uppercase tracking-widest text-[#c9974c] shadow-[inset_0_0_0_1px_rgba(201,151,76,0.4)] transition hover:bg-[#c9974c]/25">
-                  ✦ landing
+                <button onClick={() => router.push(`/app/editor/${l.id}`)} className="btn-3d btn-3d-amber">
+                  ✦ Landing
                 </button>
-                <button onClick={() => excluirLead(l.id)} disabled={!!ocupado}
-                  className="btn-ghost mono ml-auto rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest text-[var(--alert)] transition hover:bg-[var(--alert)]/10 disabled:opacity-50">
-                  {ocupado === l.id + ":excluir" ? "..." : "🗑 excluir"}
+                <button onClick={() => excluirLead(l.id)} disabled={!!ocupado} className="btn-3d btn-3d-danger ml-auto">
+                  {ocupado === l.id + ":excluir" ? "..." : "🗑 Excluir"}
                 </button>
               </div>
-            </div>
+            </motion.div>
           );
         })}
       </div>
