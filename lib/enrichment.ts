@@ -194,30 +194,27 @@ export async function radarFoods(nicho: string, cidade: string) {
   const restaurantes = new Map<string, { nome: string; url: string; fonteStr: string }>();
 
   for (const link of urlsMatches) {
-    if (!dominiosAlvo.some(d => link.includes(d))) continue;
-    
     try {
       const urlObj = new URL(link);
       const dominio = urlObj.hostname.replace('www.', '');
+      
+      // Valida pelo HOSTNAME, para não pegar links de buscas (duckduckgo/?q=site:ifood)
+      if (!dominiosAlvo.some(d => dominio.includes(d))) continue;
       
       // Tentar extrair o nome baseado na estrutura da URL de cada app
       let nomeBruto = "";
       let path = urlObj.pathname;
       
       if (dominio.includes("ifood")) {
-        // /delivery/cidade-uf/nome-do-restaurante/id
         const parts = path.split('/');
         nomeBruto = parts[3] || parts[2] || "";
       } else if (dominio.includes("tripadvisor")) {
-        // /Restaurant_Review-gXXXX-dXXXX-Reviews-Nome_Restaurante.html
         const match = path.match(/-Reviews-([^-.]+)/);
         nomeBruto = match ? match[1] : path.split('-').pop()?.replace('.html', '') || "";
       } else if (dominio.includes("ubereats")) {
-        // /store/nome-restaurante/id
         const parts = path.split('/');
         nomeBruto = parts.includes("store") ? parts[parts.indexOf("store") + 1] : "";
       } else {
-        // Fallback genérico (pega o último path slug)
         const parts = path.split('/').filter(Boolean);
         nomeBruto = parts[parts.length - 1] || "";
       }
