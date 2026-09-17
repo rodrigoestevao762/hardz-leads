@@ -103,7 +103,7 @@ export default function CyberpunkLanding() {
             </div>
             <div className="flex flex-col">
               <span className="font-display text-xl font-black tracking-widest text-white leading-none">
-                HARDZ<span className="text-[#38bdf8]">.AI</span>
+                PROSPECT<span className="text-[#38bdf8]">AI</span>
               </span>
               <span className="text-[9px] uppercase tracking-[0.3em] text-[#38bdf8]/60 mt-1">Uplink Estabelecido</span>
             </div>
@@ -282,24 +282,59 @@ export default function CyberpunkLanding() {
         </div>
       </section>
 
-      {/* ======================= CTA FINAL REDESENHADO ======================= */}
-      <section className="relative z-10 py-32 border-t border-[#38bdf8]/20 bg-[radial-gradient(ellipse_at_bottom,rgba(56,189,248,0.1)_0%,black_70%)]">
-        <div className="mx-auto max-w-4xl px-6 text-center cyber-reveal">
-          <div className="w-24 h-24 mx-auto border border-[#38bdf8]/30 rounded-full flex items-center justify-center mb-8 relative">
-            <div className="absolute inset-0 border border-[#38bdf8] rounded-full animate-ping opacity-20" />
-            <svg className="w-8 h-8 text-[#38bdf8]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-          </div>
+      {/* ======================= CTA FINAL REDESENHADO (OUT OF THIS WORLD) ======================= */}
+      <section className="relative z-10 py-40 border-t border-[#38bdf8]/10 bg-black overflow-hidden group">
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_bottom,rgba(56,189,248,0.05)_0%,black_70%)] group-hover:bg-[radial-gradient(ellipse_at_bottom,rgba(56,189,248,0.15)_0%,black_70%)] transition-colors duration-1000" />
+        
+        {/* Animated grid floor */}
+        <div className="absolute bottom-[-20%] inset-x-0 h-96 bg-grid opacity-20 [mask-image:linear-gradient(to_bottom,transparent,white)]" style={{ transform: "perspective(500px) rotateX(60deg) scale(2)" }} />
+
+        <div className="mx-auto max-w-4xl px-6 text-center cyber-reveal relative z-10">
           
-          <h2 className="headline text-5xl md:text-6xl font-black uppercase text-white mb-6">
-            PRONTO PARA O UPLINK?
+          {/* Interactive Logo/Symbol */}
+          <motion.div 
+            whileHover={{ scale: 1.1, rotate: 180 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            className="w-32 h-32 mx-auto border border-[#38bdf8]/30 rounded-full flex items-center justify-center mb-10 relative cursor-pointer group/icon"
+          >
+            {/* Spinning orbital rings */}
+            <div className="absolute inset-[-20%] border border-[#38bdf8]/20 rounded-full animate-[spin_10s_linear_infinite] group-hover/icon:border-[#38bdf8]/60 transition-colors" style={{ borderTopColor: "#38bdf8", borderBottomColor: "transparent" }} />
+            <div className="absolute inset-[-40%] border border-[#8b5cf6]/20 rounded-full animate-[spin_15s_linear_infinite_reverse] group-hover/icon:border-[#8b5cf6]/60 transition-colors" style={{ borderLeftColor: "#8b5cf6", borderRightColor: "transparent" }} />
+            <div className="absolute inset-0 border border-[#38bdf8] rounded-full animate-ping opacity-10 group-hover/icon:opacity-30 transition-opacity" />
+            
+            {/* AI Core Icon */}
+            <svg className="w-12 h-12 text-[#38bdf8] filter drop-shadow-[0_0_15px_rgba(56,189,248,0.8)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+            </svg>
+          </motion.div>
+          
+          <h2 className="font-display text-5xl md:text-7xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40 mb-6 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+            ASSUMA O COMANDO
           </h2>
-          <p className="mono text-[var(--ink-dim)] mb-12 max-w-xl mx-auto leading-relaxed">
-            A interface de prospecção mais avançada já construída. Abandone as planilhas. Conecte-se ao Nexus.
+          
+          <p className="font-body text-[var(--ink-dim)] text-lg md:text-xl mb-12 max-w-2xl mx-auto leading-relaxed group-hover:text-white/80 transition-colors duration-700">
+            A arma definitiva de extração B2B. Abandone processos manuais e planilhas obsoletas. 
+            Conecte-se à rede <span className="text-[#38bdf8] font-bold">ProspectAI</span> e escale sua aquisição de clientes para nível global.
           </p>
-          <Link href="/login" className="btn-3d btn-3d-primary py-5 px-16 text-lg font-black tracking-widest group">
-            <span className="mr-3 group-hover:mr-4 transition-all">✦</span>
-            INICIAR SEQUÊNCIA
+
+          <Link href="/login" className="relative inline-flex items-center justify-center px-12 py-6 text-sm font-bold tracking-widest text-black uppercase bg-[#38bdf8] rounded-2xl overflow-hidden group/btn hover:scale-105 hover:shadow-[0_0_50px_rgba(56,189,248,0.6)] transition-all duration-300">
+            <span className="absolute inset-0 bg-gradient-to-r from-[#0284c7] to-[#38bdf8] opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-white/40 blur-xl transform -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-out" />
+            <span className="relative flex items-center text-black group-hover/btn:text-white transition-colors duration-300 drop-shadow-md">
+              <span className="mr-3 group-hover/btn:rotate-90 transition-transform duration-300">⚡</span>
+              INICIAR EXTRAÇÃO
+            </span>
           </Link>
+
+          {/* Micro-data stats hovering around */}
+          <div className="absolute left-0 bottom-10 hidden lg:block text-left opacity-0 group-hover:opacity-100 transition-opacity duration-1000 delay-300">
+            <div className="mono text-[#38bdf8] text-[10px] tracking-widest">STATUS DO SERVIDOR</div>
+            <div className="text-white text-sm font-bold">ONLINE & OPERACIONAL</div>
+          </div>
+          <div className="absolute right-0 bottom-10 hidden lg:block text-right opacity-0 group-hover:opacity-100 transition-opacity duration-1000 delay-500">
+            <div className="mono text-[#8b5cf6] text-[10px] tracking-widest">LATÊNCIA DO NODE</div>
+            <div className="text-white text-sm font-bold">14ms (SP-BR)</div>
+          </div>
         </div>
       </section>
 
