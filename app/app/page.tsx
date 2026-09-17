@@ -297,16 +297,16 @@ export default function LeadsPage() {
       </div>
 
       {/* Abas de status */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="mb-4 -mx-4 px-4 md:mx-0 md:px-0 flex items-center gap-2 overflow-x-auto whitespace-nowrap scrollbar-hide snap-x">
         {ABAS.map((a) => (
           <button key={a.id} onClick={() => setAba(a.id)}
-            className={`mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest transition ${
+            className={`mono shrink-0 snap-start rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest transition ${
               aba === a.id
                 ? "bg-[rgba(45,255,180,0.12)] text-[var(--signal)] shadow-[inset_0_0_0_1px_rgba(45,255,180,0.35)]"
                 : "text-[var(--ink-dim)] hover:bg-white/5 hover:text-[var(--ink)]"
             }`}>
             {a.label}
-            <span className="ml-2 text-[var(--ink-faint)]">{contagemAba[a.id]}</span>
+            <span className={`ml-2 ${aba === a.id ? "text-[var(--signal)]" : "text-[var(--ink-faint)]"}`}>{contagemAba[a.id]}</span>
           </button>
         ))}
       </div>
