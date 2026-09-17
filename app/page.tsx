@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
@@ -76,18 +76,13 @@ export default function CyberpunkLanding() {
   return (
     <main ref={containerRef} className="bg-void relative min-h-screen overflow-hidden text-white font-sans selection:bg-[var(--signal)] selection:text-black">
       
-      {/* Background Parallax Image - Cyberpunk City / Netrunner vibe */}
+      {/* Background Parallax Image - Satellite Slider */}
       <motion.div 
         ref={bgRef}
-        className="fixed inset-0 z-0 pointer-events-none"
+        className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
         style={{ y: yBg }}
       >
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-30" 
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?q=80&w=2000&auto=format&fit=crop')" }} 
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#030603]/80 to-[#030603] backdrop-blur-[2px]" />
-        <div className="bg-grid absolute inset-0 opacity-50" />
+        <SatelliteBackground />
       </motion.div>
 
       {/* Cyberpunk Scanline */}
@@ -267,6 +262,41 @@ export default function CyberpunkLanding() {
       </section>
 
     </main>
+  );
+}
+
+const SATELLITE_IMAGES = [
+  "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2000&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=2000&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1551808525-51a94da548ce?q=80&w=2000&auto=format&fit=crop",
+];
+
+function SatelliteBackground() {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((prev) => (prev + 1) % SATELLITE_IMAGES.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="absolute inset-0">
+      <AnimatePresence mode="popLayout">
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 0.3, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 3, ease: "easeInOut" }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url('${SATELLITE_IMAGES[index]}')` }}
+        />
+      </AnimatePresence>
+      <div className="absolute inset-0 bg-gradient-to-b from-[#030603]/30 via-[#030603]/80 to-[#030603] backdrop-blur-[2px]" />
+      <div className="bg-grid absolute inset-0 opacity-40 mix-blend-overlay" />
+    </div>
   );
 }
 
