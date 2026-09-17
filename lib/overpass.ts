@@ -70,7 +70,8 @@ export async function buscarEmpresas(
     const [k, v] = t.split("=");
     return `nwr["${k}"="${esc(v)}"]${around};`;
   });
-  const query = `[out:json][timeout:40];(${selectors.join("")});out center 120;`;
+  // Limite massivo de 3000 resultados para velocidade e volume de extração extremo
+  const query = `[out:json][timeout:40];(${selectors.join("")});out center 3000;`;
 
   const UA = { "User-Agent": "ProspectandoAI/1.0 (prospeccao de empresas)" };
 

@@ -39,8 +39,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 });
     }
 
-    // Busca os dados enriquecidos
-    const enriquecido = await enrichLeadData(nome, cidade, pais);
+    // Tenta enriquecer com Outscraper PRIMEIRO para dados extremamente precisos e rápidos
+    let enriquecido: any = null;
+    if (process.env.OUTSCRAPER_API_KEY) {
+      try {
+        const { buscarOutscraper } = await import("@/lib/outscraper");
+        const outRes = await buscarOutscraper(`"${nome}" em ${cidade}, ${pais}`, process.env.OUTSCRAPER_API_KEY);
+        if (outRes && outRes.length > 0) {
+          enriquecido = {
+            facebook: outRes[0].facebook || null,
+            instagram: outRes[0].instagram || null,
+            email: outRes[0].email || null,
+            fontes: ["outscraper"]
+          };
+        }
+      } catch (e) {
+        console.error("Outscraper fallback erro:", e);
+      }
+    }
+
+    // Fallback para OSINT se Outscraper falhar ou não trouxer e-mail
+    if (!enriquecido || !enriquecido.email) {
+      const osint = await enrichLeadData(nome, cidade, pais);
+      enriquecido = {
+        facebook: enriquecido?.facebook || osint.facebook,
+        instagram: enriquecido?.instagram || osint.instagram,
+        email: enriquecido?.email || osint.email,
+        fontes: [...(enriquecido?.fontes || []), ...osint.fontes]
+      };
+    }
 
     // Busca o lead atual para proteger dados existentes
     const { data: lead } = await supabase

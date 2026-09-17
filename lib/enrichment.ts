@@ -145,6 +145,8 @@ export async function enrichLeadData(nome: string, cidade: string, uf: string = 
   };
 }
 
+import { geocodificar, buscarEmpresas } from './overpass';
+
 export async function radarInstagram(nicho: string, cidade: string) {
   const cid = (cidade.toLowerCase() === "mundial" || cidade.trim() === "") ? "" : cidade.trim();
   const nic = nicho.trim() || "empresa";
@@ -155,6 +157,36 @@ export async function radarInstagram(nicho: string, cidade: string) {
                       nic.toLowerCase().includes("loja") ? `${nic} store` : 
                       nic.toLowerCase().includes("estética") ? `${nic} spa` : nic;
 
+  // Usa Geocodificação + Overpass (Extremamente rápido e varre milhares de comércios)
+  const geo = await geocodificar(cid);
+  if (geo) {
+    const emp = await buscarEmpresas(
+      "all",
+      [`name~${nicExpanded.split(' ')[0]}`], // Busca qualquer coisa relacionada ao nicho
+      geo.lat,
+      geo.lng,
+      geo.radiusM,
+      cid,
+      geo.paisNome
+    );
+    // Para manter a assinatura, convertemos para o formato do radar
+    return emp.map(e => ({
+      osmId: e.osmId,
+      nome: e.nome,
+      categoria: nicho || "Instagram",
+      cidade: cidade || "Global",
+      pais: e.pais || "",
+      telefone: e.telefone || null,
+      website: e.website || null,
+      email: e.email || null,
+      instagram: e.instagram || null,
+      fonte: "overpass",
+      score: 50,
+      nivel: "morno"
+    }));
+  }
+
+  // Fallback para OSINT se a cidade não for encontrada
   const base = `${nicExpanded} ${cid}`.trim();
   const baseComAspas = `${nicExpanded} ${cid ? `"${cid}"` : ""}`.trim();
   
@@ -222,6 +254,36 @@ export async function radarFoods(nicho: string, cidade: string) {
                       nic.toLowerCase().includes("hamburgueria") ? `${nic} burger` : 
                       nic.toLowerCase().includes("pizzaria") ? `${nic} pizzeria` : nic;
 
+  // Busca Massiva via Overpass API primeiro (Milhares de restaurantes globais)
+  const geo = await geocodificar(cid);
+  if (geo) {
+    const emp = await buscarEmpresas(
+      "food",
+      ["amenity~restaurant|fast_food|cafe|bar", "shop~bakery|pastry", `name~${nicExpanded.split(' ')[0]}`], 
+      geo.lat,
+      geo.lng,
+      geo.radiusM,
+      cid,
+      geo.paisNome
+    );
+    // Transforma a saída do mapa na saída de leads (mesmo que não tenha iFood ainda, o usuário enriquece)
+    return emp.map(e => ({
+      osmId: e.osmId,
+      nome: e.nome,
+      categoria: "Restaurante/Delivery",
+      cidade: e.cidade || cidade,
+      pais: e.pais || "",
+      telefone: e.telefone || null,
+      website: e.website || null,
+      email: e.email || null,
+      instagram: e.instagram || null,
+      fonte: "overpass_foods",
+      score: 70,
+      nivel: "quente"
+    }));
+  }
+
+  // Fallback para OSINT se falhar
   const base = `${nicExpanded} ${cid}`.trim();
   const baseComAspas = `${nicExpanded} ${cid ? `"${cid}"` : ""}`.trim();
 
@@ -245,15 +307,13 @@ export async function radarFoods(nicho: string, cidade: string) {
   
   const restaurantes = new Map<string, { nome: string; url: string; fonteStr: string }>();
 
-  for (const link of urlsMatches) {
+  for (let link of urlsMatches) {
     try {
       const urlObj = new URL(link);
       const dominio = urlObj.hostname.replace('www.', '');
       
-      // Valida pelo HOSTNAME, para não pegar links de buscas (duckduckgo/?q=site:ifood)
       if (!dominiosAlvo.some(d => dominio.includes(d))) continue;
       
-      // Tentar extrair o nome baseado na estrutura da URL de cada app
       let nomeBruto = "";
       let path = urlObj.pathname;
       
@@ -273,7 +333,6 @@ export async function radarFoods(nicho: string, cidade: string) {
       
       if (!nomeBruto || nomeBruto.length < 3 || nomeBruto.includes("?")) continue;
       
-      // Limpa nome
       const nomeLimpo = nomeBruto.replace(/[_-]/g, " ").replace(/\b\w/g, l => l.toUpperCase());
       const chave = nomeLimpo.toLowerCase();
       
@@ -289,13 +348,11 @@ export async function radarFoods(nicho: string, cidade: string) {
     }
   }
 
-  const listaFinal = Array.from(restaurantes.values()).slice(0, 100);
-
-  return listaFinal.map(r => ({
+  return Array.from(restaurantes.values()).map(r => ({
     osmId: `food_${r.fonteStr}_${r.nome.replace(/\s+/g, '')}`,
     nome: r.nome,
-    categoria: nicho || "Restaurante",
-    cidade: cidade || "Global",
+    categoria: 'Restaurante',
+    cidade: cid,
     pais: "",
     telefone: null,
     website: r.url,
@@ -303,6 +360,6 @@ export async function radarFoods(nicho: string, cidade: string) {
     instagram: null,
     fonte: r.fonteStr,
     score: 60,
-    nivel: "morno"
+    nivel: "morno" as const
   }));
 }
