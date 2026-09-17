@@ -6,12 +6,7 @@ import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "fra
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-
-const TICKER = [
-  { label: "BARBEARIAS", icon: "✂" }, { label: "RESTAURANTES", icon: "🍽" },
-  { label: "ACADEMIAS", icon: "⚡" }, { label: "CLÍNICAS", icon: "💊" },
-  { label: "SALÕES", icon: "💅" }, { label: "OFICINAS", icon: "🔧" },
-];
+import CobeGlobe from "@/components/CobeGlobe";
 
 const PASSOS = [
   { n: "01", titulo: "UPLINK DE REDE", desc: "Conecte-se ao backbone global. O radar varre nós urbanos em segundos caçando assinaturas corporativas.", cor: "var(--signal)" },
@@ -144,121 +139,119 @@ export default function CyberpunkLanding() {
         </motion.div>
       </section>
 
-      {/* ======================= TICKER ======================= */}
-      <div className="relative z-20 border-y border-[var(--signal)]/20 bg-black/60 backdrop-blur-xl py-3 overflow-hidden">
-        <motion.div 
-          animate={{ x: [0, -1000] }} transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
-          className="flex whitespace-nowrap gap-12"
-        >
-          {[...TICKER, ...TICKER, ...TICKER, ...TICKER].map((c, i) => (
-            <span key={i} className="mono text-[12px] uppercase tracking-widest text-[var(--signal)]/80 flex items-center gap-3">
-              {c.icon} {c.label} <span className="text-white/20">///</span>
-            </span>
-          ))}
-        </motion.div>
-      </div>
-
-      {/* ======================= PROTOCOLO DE CAÇA ======================= */}
-      <section id="matrix" className="relative z-10 mx-auto max-w-7xl px-6 py-32">
-        <div className="cyber-reveal text-center mb-20">
-          <h2 className="headline text-5xl font-black uppercase tracking-tight text-white drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
-            ARQUITETURA DE INFILTRAÇÃO
-          </h2>
-          <p className="mono mt-4 text-[var(--signal)] tracking-[0.3em] text-xs">TRÊS FASES. ZERO DETECÇÃO.</p>
-        </div>
-
-        <div className="grid gap-8 md:grid-cols-3">
-          {PASSOS.map((p, i) => (
-            <div key={p.n} className="cyber-reveal group relative rounded-2xl bg-white/5 border border-white/10 p-8 backdrop-blur-md overflow-hidden hover:border-[var(--signal)]/50 transition-colors duration-500">
-              <div className="absolute -inset-1 bg-gradient-to-b from-[var(--signal)]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-xl z-0" />
-              
-              <div className="relative z-10">
-                <div className="text-[5rem] font-black text-white/5 leading-none absolute -top-4 -right-4 pointer-events-none group-hover:text-[var(--signal)]/10 transition-colors">
-                  {p.n}
-                </div>
-                <h3 className="mono text-xl font-bold mb-4 tracking-widest" style={{ color: p.cor }}>{p.titulo}</h3>
-                <p className="text-[var(--ink-dim)] leading-relaxed text-sm">
-                  {p.desc}
-                </p>
+      {/* ======================= GLOBAL TRACKING WIDGET (GLOBE) ======================= */}
+      <section className="relative z-10 border-y border-[var(--signal)]/20 bg-black/80 backdrop-blur-3xl overflow-hidden py-16 md:py-32">
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(45,255,180,0.15)_0%,transparent_60%)]" />
+        
+        <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-12 items-center relative z-10">
+          {/* Globe Container */}
+          <div className="cyber-reveal relative w-full h-[500px] md:h-[600px] rounded-3xl border border-white/10 bg-black/40 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-md">
+            <CobeGlobe />
+            
+            {/* Holographic Overlays */}
+            <div className="absolute top-6 left-6 pointer-events-none z-40">
+              <div className="mono text-[var(--signal)] text-[10px] tracking-widest flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[var(--signal)] animate-pulse" />
+                GLOBAL UPLINK ACTIVE
               </div>
-
-              {/* Decorative cyber lines */}
-              <div className="absolute bottom-0 left-0 h-1 w-0 bg-[var(--signal)] transition-all duration-700 group-hover:w-full" />
-              <div className="absolute top-0 right-0 w-1 h-0 bg-[var(--signal)] transition-all duration-700 group-hover:h-full delay-100" />
+              <div className="mono text-white/40 text-[9px] mt-1">SCANNING NEURAL NETWORKS...</div>
             </div>
-          ))}
-        </div>
-      </section>
+            
+            <div className="absolute bottom-6 right-6 pointer-events-none text-right z-40">
+              <div className="mono text-white/80 text-xl font-bold tracking-widest">14,293</div>
+              <div className="mono text-[var(--ink-dim)] text-[9px]">ALVOS DETECTADOS (24H)</div>
+            </div>
+          </div>
 
-      {/* ======================= HOLO INTERFACE ======================= */}
-      <section className="relative z-10 border-y border-white/10 bg-black/40 backdrop-blur-2xl py-32">
-        <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-16 items-center">
+          {/* Globe Content */}
           <div className="cyber-reveal">
-            <div className="mono text-[var(--signal)] text-xs tracking-[0.4em] mb-4">ALGORITMO HEURÍSTICO</div>
-            <h2 className="headline text-5xl font-black uppercase leading-tight mb-6">
-              Mapeamento de<br/>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--signal)] to-blue-500">
-                Alvos Vulneráveis
-              </span>
+            <div className="mono text-[var(--signal)] text-xs tracking-[0.4em] mb-4">MÓDULO DE RADAR ESPACIAL</div>
+            <h2 className="headline text-4xl md:text-5xl font-black uppercase leading-tight mb-6">
+              Varredura de <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--signal)] to-cyan-500">Nível Global</span>
             </h2>
-            <p className="text-[var(--ink-dim)] mb-8 max-w-md leading-relaxed">
-              Nosso motor cruza dados em tempo real. Se uma corporação não possui escudo digital (website), ela acende no radar como alvo primordial.
+            <p className="text-[var(--ink-dim)] mb-8 leading-relaxed">
+              O sistema não se limita a fronteiras. Interaja com o globo holográfico para visualizar concentrações de alvos B2B espalhados pelos principais polos tecnológicos e comerciais do mundo. Onde houver uma empresa desconectada, nós a encontraremos.
             </p>
             
-            <div className="space-y-4">
-              {[
-                { label: "Sem Website (Alvo Crítico)", bar: "100%", color: "var(--signal)" },
-                { label: "Instagram Detectado", bar: "60%", color: "#8b5cf6" },
-                { label: "E-mail Exposto", bar: "40%", color: "#38bdf8" },
-              ].map(item => (
-                <div key={item.label} className="mono text-xs">
-                  <div className="flex justify-between mb-2">
-                    <span className="text-white/60">{item.label}</span>
-                    <span style={{ color: item.color }}>[ {item.bar} ]</span>
-                  </div>
-                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      whileInView={{ width: item.bar }}
-                      transition={{ duration: 1.5, ease: "circOut" }}
-                      viewport={{ once: true }}
-                      className="h-full shadow-[0_0_10px_currentColor]"
-                      style={{ backgroundColor: item.color, color: item.color }}
-                    />
-                  </div>
+            <div className="flex flex-col gap-4">
+              <div className="p-4 border border-white/5 rounded-xl bg-white/[0.02] flex items-center gap-4 hover:border-[var(--signal)]/30 transition-colors">
+                <div className="w-12 h-12 rounded-full border border-[var(--signal)]/50 flex items-center justify-center text-[var(--signal)] shrink-0">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
                 </div>
-              ))}
-            </div>
-          </div>
+                <div>
+                  <h4 className="text-white font-bold tracking-wide text-sm">Rastreamento Multilíngue</h4>
+                  <p className="text-[var(--ink-faint)] text-xs mt-1">IA capaz de traduzir e prospectar em 12+ idiomas instantaneamente.</p>
+                </div>
+              </div>
 
-          <div className="cyber-reveal relative h-[400px] w-full rounded-3xl border border-[var(--signal)]/30 bg-black/50 overflow-hidden flex items-center justify-center perspective-[1000px]">
-             {/* 3D Floating Cyber Element */}
-             <motion.div 
-               animate={{ rotateX: [0, 10, -10, 0], rotateY: [0, 15, -15, 0] }}
-               transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-               className="relative w-64 h-64 border-2 border-[var(--signal)]/40 rounded-full flex items-center justify-center transform-style-3d shadow-[0_0_50px_rgba(45,255,180,0.2)]"
-             >
-                <div className="absolute w-48 h-48 border border-[#8b5cf6]/50 rounded-full animate-[spin_4s_linear_reverse_infinite]" />
-                <div className="absolute w-32 h-32 border-2 border-[#38bdf8]/60 rounded-full animate-[spin_3s_linear_infinite]" />
-                <Radar className="w-20 h-20 text-[var(--signal)]" />
-             </motion.div>
-             <div className="absolute top-4 left-4 mono text-[10px] text-[var(--signal)]">SYS.CORE.ACTIVE</div>
-             <div className="absolute bottom-4 right-4 mono text-[10px] text-white/40">COORD: 45.992, -12.441</div>
+              <div className="p-4 border border-white/5 rounded-xl bg-white/[0.02] flex items-center gap-4 hover:border-[#8b5cf6]/30 transition-colors">
+                <div className="w-12 h-12 rounded-full border border-[#8b5cf6]/50 flex items-center justify-center text-[#8b5cf6] shrink-0">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                </div>
+                <div>
+                  <h4 className="text-white font-bold tracking-wide text-sm">Ultra Baixa Latência</h4>
+                  <p className="text-[var(--ink-faint)] text-xs mt-1">Conexões assíncronas escaneiam milhares de empresas por segundo.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ======================= CTA FINAL ======================= */}
-      <section className="relative z-10 mx-auto max-w-4xl px-6 py-40 text-center cyber-reveal">
-        <h2 className="headline text-6xl font-black uppercase text-white mb-8 drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-          PRONTO PARA O UPLINK?
-        </h2>
-        <p className="mono text-[var(--ink-dim)] mb-12">
-          Abandone as ferramentas antigas. Conecte-se ao nexus e automatize sua prospecção em escala global.
-        </p>
-        <Link href="/login" className="btn-3d btn-3d-primary py-5 px-16 text-lg font-black tracking-widest shadow-[0_0_40px_rgba(45,255,180,0.5)]">
-          INICIAR SEQUÊNCIA
-        </Link>
+      {/* ======================= ARQUITETURA DE DADOS (NOVA PARTE DE BAIXO) ======================= */}
+      <section id="matrix" className="relative z-10 mx-auto max-w-7xl px-6 py-32">
+        <div className="cyber-reveal text-center mb-16">
+          <h2 className="headline text-4xl font-black uppercase tracking-tight text-white">
+            Protocolos de <span className="text-[var(--signal)]">Infiltração</span>
+          </h2>
+          <p className="mono mt-4 text-[var(--ink-dim)] tracking-widest text-xs">MECANISMOS DE CONVERSÃO EXTREMA</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {PASSOS.map((p, i) => (
+            <div key={p.n} className="cyber-reveal group relative p-px rounded-3xl bg-gradient-to-b from-white/10 to-transparent overflow-hidden">
+              <div className="absolute inset-0 bg-[var(--signal)] opacity-0 group-hover:opacity-20 transition-opacity duration-700 blur-2xl" />
+              <div className="relative h-full bg-black/80 backdrop-blur-xl rounded-[23px] p-8 flex flex-col justify-between border border-white/5 group-hover:border-[var(--signal)]/30 transition-colors">
+                
+                <div>
+                  <div className="mono text-5xl font-black text-white/5 mb-6 group-hover:text-white/10 transition-colors">
+                    {p.n}
+                  </div>
+                  <h3 className="text-lg font-bold uppercase tracking-wider mb-3 text-white">{p.titulo}</h3>
+                  <p className="text-[var(--ink-faint)] text-sm leading-relaxed">
+                    {p.desc}
+                  </p>
+                </div>
+
+                <div className="mt-8 flex items-center justify-between">
+                  <div className="h-0.5 w-12 bg-white/10 group-hover:bg-[var(--signal)] group-hover:w-20 transition-all duration-500" />
+                  <span className="mono text-[10px]" style={{ color: p.cor }}>sys.run()</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ======================= CTA FINAL REDESENHADO ======================= */}
+      <section className="relative z-10 py-32 border-t border-[var(--signal)]/20 bg-[radial-gradient(ellipse_at_bottom,rgba(45,255,180,0.1)_0%,black_70%)]">
+        <div className="mx-auto max-w-4xl px-6 text-center cyber-reveal">
+          <div className="w-24 h-24 mx-auto border border-[var(--signal)]/30 rounded-full flex items-center justify-center mb-8 relative">
+            <div className="absolute inset-0 border border-[var(--signal)] rounded-full animate-ping opacity-20" />
+            <svg className="w-8 h-8 text-[var(--signal)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+          </div>
+          
+          <h2 className="headline text-5xl md:text-6xl font-black uppercase text-white mb-6">
+            PRONTO PARA O UPLINK?
+          </h2>
+          <p className="mono text-[var(--ink-dim)] mb-12 max-w-xl mx-auto leading-relaxed">
+            A interface de prospecção mais avançada já construída. Abandone as planilhas. Conecte-se ao Nexus.
+          </p>
+          <Link href="/login" className="btn-3d btn-3d-primary py-5 px-16 text-lg font-black tracking-widest group">
+            <span className="mr-3 group-hover:mr-4 transition-all">✦</span>
+            INICIAR SEQUÊNCIA
+          </Link>
+        </div>
       </section>
 
     </main>
