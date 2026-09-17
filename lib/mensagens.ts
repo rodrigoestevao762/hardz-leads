@@ -19,19 +19,19 @@ export function idiomaDoPais(pais: string, cidade: string): string {
 
 function promptMsg(l: MsgInput): string {
   const cat = getCategoria(l.categoria)?.label || l.categoria;
-  const idioma = idiomaDoPais(l.pais, l.cidade);
-  return `Você é um redator de prospecção B2B. Escreva UMA mensagem de primeira abordagem (WhatsApp ou e-mail) apresentando ${l.negocio.negocio_nome}, que oferece: ${l.negocio.servico}. Diferenciais: ${l.negocio.diferenciais}.
+  const idiomaLocal = l.pais || l.cidade || "Brasil";
+  return `Você é um redator de prospecção B2B nativo do país/cidade do cliente. Escreva UMA mensagem de primeira abordagem (WhatsApp ou e-mail) apresentando a empresa ${l.negocio.negocio_nome}, que oferece: ${l.negocio.servico}. Diferenciais: ${l.negocio.diferenciais}.
 
 Destinatário: "${l.nome}", um(a) ${cat.toLowerCase()} em ${l.cidade} (${l.pais}).
 Sinais: ${l.temSite ? "já tem site (foco em melhorar/renovar)" : "NÃO tem site próprio (principal gancho)"}; ${l.temInstagram ? "tem Instagram" : "não tem Instagram"}; ${l.temEmail ? "tem e-mail público" : "sem e-mail público"}.
 
-Regras:
-- Idioma: Escreva estritamente em ${idioma}. Se não for possível determinar, use português do Brasil.
-- 3 a 5 frases, tom humano e direto, sem formalidade excessiva
-- Cite o gancho específico (falta de site / presença no Google) e um benefício claro
-- Termine com uma pergunta simples de fechamento
-- Não invente dados (nada de estatísticas falsas, prêmios ou números)
-- Responda SOMENTE com o texto da mensagem, sin aspas ni comentarios`;
+Regras RIGOROSAS:
+1. IDIOMA OBRIGATÓRIO: A mensagem DEVE estar escrita EXCLUSIVAMENTE no idioma oficial e nativo da localidade do destinatário (${idiomaLocal}). Se for nos EUA, escreva em Inglês. Se for Itália, Italiano. Se Portugal ou Brasil, Português. NUNCA escreva em português se o negócio for de outro país!
+2. 3 a 5 frases, tom humano e direto, sem formalidade excessiva
+3. Cite o gancho específico (falta de site / presença no Google) e um benefício claro
+4. Termine com uma pergunta simples de fechamento
+5. NUNCA invente dados (estatísticas falsas, prêmios, números)
+6. Responda SOMENTE com o texto da mensagem final traduzida para o idioma do cliente, sem aspas nem comentários adicionais.`;
 }
 
 function templateMsg(l: MsgInput): string {
