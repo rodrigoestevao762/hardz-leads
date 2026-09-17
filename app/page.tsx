@@ -8,10 +8,13 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import RealisticGlobe from "@/components/RealisticGlobe";
 
-const PASSOS = [
-  { n: "01", titulo: "UPLINK DE REDE", desc: "Conecte-se ao backbone global. O radar varre nós urbanos em segundos caçando assinaturas corporativas.", cor: "#38bdf8" },
-  { n: "02", titulo: "ANÁLISE HEURÍSTICA", desc: "Cada alvo recebe um threat-score. Sem ICE (site) = alvo fácil. Nível vulnerável destacado no grid.", cor: "#8b5cf6" },
-  { n: "03", titulo: "INFILTRAÇÃO IA", desc: "Geração de payloads de texto via IA neural. A abordagem entra na caixa de entrada traduzida e letal.", cor: "var(--amber)" },
+const FEATURES = [
+  { n: "01", titulo: "MAPEAMENTO GLOBAL OSINT", desc: "O radar varre o globo em tempo real. Nossa engine OSINT identifica milhares de empresas desprotegidas por segundo, varrendo as coordenadas de todos os pólos comerciais do planeta.", cor: "#38bdf8", colSpan: "md:col-span-2", icon: "🌍" },
+  { n: "02", titulo: "MOTOR DE IA POLIGLOTA", desc: "Cada alvo recebe uma abordagem neural nativa. A IA traduz perfeitamente e redige cold e-mails de conversão extrema em mais de 15 idiomas simultaneamente.", cor: "#8b5cf6", colSpan: "md:col-span-1", icon: "🧠" },
+  { n: "03", titulo: "BYPASS DE SPAM FANTASMA", desc: "Infraestrutura de envios corporativa. Rotacionamos domínios e IPs para garantir 99.8% de taxa de entrega na caixa principal. O alvo nem saberá de onde veio a interceptação.", cor: "#ec4899", colSpan: "md:col-span-1", icon: "👻" },
+  { n: "04", titulo: "QUALIFICAÇÃO HEURÍSTICA", desc: "O algoritmo não apenas encontra empresas, ele pontua os alvos baseando-se em ausência de site e presença digital, entregando um 'Threat-Score' instantâneo para priorização.", cor: "#10b981", colSpan: "md:col-span-2", icon: "🎯" },
+  { n: "05", titulo: "BLINDAGEM DE DOMÍNIO", desc: "Aquecimento contínuo automatizado. A IA simula diálogos humanos nas suas caixas de saída 24/7 para construir sua reputação como emissor autoritário.", cor: "#f59e0b", colSpan: "md:col-span-2", icon: "🛡️" },
+  { n: "06", titulo: "VISÃO TÁTICA (CRM)", desc: "Seu dashboard de comando. Acompanhe a abertura dos payloads, intercepte respostas quentes e gerencie o faturamento através de um HUD de alto contraste.", cor: "#38bdf8", colSpan: "md:col-span-1", icon: "💻" },
 ];
 
 export default function CyberpunkLanding() {
@@ -83,25 +86,39 @@ export default function CyberpunkLanding() {
       {/* Cyberpunk Scanline */}
       <div className="scan-line z-50 pointer-events-none opacity-50 mix-blend-screen" />
 
-      {/* ======================= NAV ======================= */}
-      <nav className="fixed top-0 inset-x-0 z-50 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4 backdrop-blur-xl border-b border-white/5 bg-black/40">
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-3"
-        >
-          <div className="w-8 h-8 rounded-md bg-gradient-to-br from-white to-gray-400 flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.2)]">
-            <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-          </div>
-          <span className="font-display text-lg font-bold tracking-widest text-white">
-            HARDZ<span className="text-white/40 font-light">.AI</span>
-          </span>
-        </motion.div>
-        
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-          <Link href="/login" className="px-6 py-2.5 rounded-full border border-white/10 bg-white/5 text-xs font-semibold tracking-widest uppercase text-white hover:bg-white/10 transition-colors">
-            INIT UPLINK →
-          </Link>
-        </motion.div>
+      {/* ======================= NAV "OUT OF THIS WORLD" ======================= */}
+      <nav className="fixed top-6 inset-x-0 z-50 mx-auto w-[95%] max-w-7xl rounded-2xl border border-[#38bdf8]/20 bg-black/60 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden group transition-all hover:border-[#38bdf8]/50 hover:shadow-[0_0_40px_rgba(56,189,248,0.2)]">
+        {/* Animated laser scan line inside nav */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+           <div className="absolute top-0 left-[-100%] w-[200%] h-[1px] bg-gradient-to-r from-transparent via-[#38bdf8] to-transparent animate-[scan_3s_linear_infinite]" />
+        </div>
+        <div className="relative flex items-center justify-between px-6 py-4">
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-4 cursor-pointer"
+          >
+            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-[#38bdf8] to-[#0284c7] flex items-center justify-center shadow-[0_0_20px_rgba(56,189,248,0.4)] overflow-hidden">
+              <div className="absolute inset-0 bg-white/20 blur-md transform scale-150 group-hover:rotate-180 transition-transform duration-1000" />
+              <svg className="w-5 h-5 text-[#0a121b] relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
+            <div className="flex flex-col">
+              <span className="font-display text-xl font-black tracking-widest text-white leading-none">
+                HARDZ<span className="text-[#38bdf8]">.AI</span>
+              </span>
+              <span className="text-[9px] uppercase tracking-[0.3em] text-[#38bdf8]/60 mt-1">Uplink Estabelecido</span>
+            </div>
+          </motion.div>
+          
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#10b981] shadow-[0_0_8px_#10b981] animate-pulse" />
+              <span className="text-[10px] mono text-[#10b981] uppercase tracking-widest">Sistemas Operacionais</span>
+            </div>
+            <Link href="/login" className="btn-3d px-6 py-3 rounded-xl border border-[#38bdf8]/30 bg-[#38bdf8]/10 text-xs font-bold tracking-widest uppercase text-[#38bdf8] hover:bg-[#38bdf8] hover:text-black transition-all shadow-[0_0_20px_rgba(56,189,248,0.1)]">
+              [ INIT UPLINK ]
+            </Link>
+          </motion.div>
+        </div>
       </nav>
 
       {/* ======================= HERO ======================= */}
@@ -227,25 +244,37 @@ export default function CyberpunkLanding() {
           <p className="mono mt-4 text-[var(--ink-dim)] tracking-widest text-xs">MECANISMOS DE CONVERSÃO EXTREMA</p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {PASSOS.map((p, i) => (
-            <div key={p.n} className="cyber-reveal group relative p-px rounded-3xl bg-gradient-to-b from-white/10 to-transparent overflow-hidden">
-              <div className="absolute inset-0 bg-[#38bdf8] opacity-0 group-hover:opacity-20 transition-opacity duration-700 blur-2xl" />
-              <div className="relative h-full bg-black/80 backdrop-blur-xl rounded-[23px] p-8 flex flex-col justify-between border border-white/5 group-hover:border-[#38bdf8]/30 transition-colors">
+        <div className="grid md:grid-cols-3 gap-6 auto-rows-[auto]">
+          {FEATURES.map((p, i) => (
+            <div key={p.n} className={`cyber-reveal group relative p-px rounded-3xl bg-gradient-to-b from-white/10 to-transparent overflow-hidden ${p.colSpan}`}>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 blur-[80px] opacity-0 group-hover:opacity-30 transition-all duration-700" style={{ backgroundColor: p.cor }} />
+              
+              <div className="relative h-full bg-[#0a121b]/80 backdrop-blur-xl rounded-[23px] p-8 lg:p-10 flex flex-col justify-between border border-white/5 group-hover:border-white/20 transition-all duration-500 group-hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.6)]">
                 
                 <div>
-                  <div className="mono text-5xl font-black text-white/5 mb-6 group-hover:text-white/10 transition-colors">
-                    {p.n}
+                  <div className="flex items-center justify-between mb-8">
+                    <div className="text-4xl filter drop-shadow-lg transform group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500">{p.icon}</div>
+                    <div className="mono text-5xl font-black text-white/5 group-hover:text-white/20 transition-colors">
+                      {p.n}
+                    </div>
                   </div>
-                  <h3 className="text-lg font-bold uppercase tracking-wider mb-3 text-white">{p.titulo}</h3>
-                  <p className="text-[var(--ink-faint)] text-sm leading-relaxed">
+                  
+                  <h3 className="font-display text-xl lg:text-2xl font-bold uppercase tracking-wide mb-4 text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-white/60 transition-all">
+                    {p.titulo}
+                  </h3>
+                  <p className="text-[var(--ink-dim)] text-sm lg:text-base leading-relaxed group-hover:text-white/80 transition-colors duration-500">
                     {p.desc}
                   </p>
                 </div>
 
-                <div className="mt-8 flex items-center justify-between">
-                  <div className="h-0.5 w-12 bg-white/10 group-hover:bg-[#38bdf8] group-hover:w-20 transition-all duration-500" />
-                  <span className="mono text-[10px]" style={{ color: p.cor }}>sys.run()</span>
+                <div className="mt-10 flex items-center justify-between border-t border-white/5 pt-6">
+                  <div className="flex gap-1.5">
+                    <div className="h-1.5 w-2 rounded-full opacity-20 group-hover:opacity-100 transition-all delay-75" style={{ backgroundColor: p.cor }} />
+                    <div className="h-1.5 w-4 rounded-full opacity-20 group-hover:opacity-100 transition-all delay-100" style={{ backgroundColor: p.cor }} />
+                    <div className="h-1.5 w-8 rounded-full opacity-20 group-hover:opacity-100 transition-all delay-150" style={{ backgroundColor: p.cor }} />
+                  </div>
+                  <span className="mono text-[10px] tracking-widest uppercase opacity-50 group-hover:opacity-100 transition-opacity" style={{ color: p.cor }}>sys.run()</span>
                 </div>
               </div>
             </div>
