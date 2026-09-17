@@ -41,9 +41,24 @@ function extractSocialLinks(html: string) {
   // Extrai Emails
   const emailMatches = html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
   
-  // Filtra e-mails sujos (falsos positivos dos motores)
-  const dominiosBloqueados = ["duckduckgo.com", "sentry.io", "example.com", "w3.org", "sijax", "bing.com", "yahoo.com"];
-  const emailValido = emailMatches.find(e => !dominiosBloqueados.some(d => e.toLowerCase().includes(d)));
+  // Filtra e-mails sujos (falsos positivos dos motores ou imagens)
+  const dominiosBloqueados = [
+    "duckduckgo", "sentry", "example", "w3.org", "sijax", "bing.com", "yahoo.com",
+    "google.com", "microsoft.com", "facebook.com", "instagram.com", "twitter.com",
+    "apple.com", "cloudflare.com", "ifood.com", "tripadvisor.com"
+  ];
+  const extensoesInvalidas = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".css", ".js"];
+  
+  const emailValido = emailMatches.find(e => {
+    const l = e.toLowerCase();
+    // Rejeita se for arquivo de imagem ou script
+    if (extensoesInvalidas.some(ext => l.endsWith(ext))) return false;
+    // Rejeita domínios de motores ou corporações grandes
+    if (dominiosBloqueados.some(d => l.includes(d))) return false;
+    // Evita emails absurdamente grandes (falsos matches)
+    if (l.length > 50) return false;
+    return true;
+  });
 
   return {
     instagram: instagram ? (instagram.startsWith('http') ? instagram : `https://www.${instagram}`) : null,
