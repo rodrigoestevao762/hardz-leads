@@ -6,7 +6,7 @@ import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "fra
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import CobeGlobe from "@/components/CobeGlobe";
+import RealisticGlobe from "@/components/RealisticGlobe";
 
 const PASSOS = [
   { n: "01", titulo: "UPLINK DE REDE", desc: "Conecte-se ao backbone global. O radar varre nós urbanos em segundos caçando assinaturas corporativas.", cor: "var(--signal)" },
@@ -146,7 +146,7 @@ export default function CyberpunkLanding() {
         <div className="mx-auto max-w-7xl px-6 grid lg:grid-cols-2 gap-12 items-center relative z-10">
           {/* Globe Container */}
           <div className="cyber-reveal relative w-full h-[500px] md:h-[600px] rounded-3xl border border-white/10 bg-black/40 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-md">
-            <CobeGlobe />
+            <RealisticGlobe />
             
             {/* Holographic Overlays */}
             <div className="absolute top-6 left-6 pointer-events-none z-40">
