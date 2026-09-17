@@ -231,45 +231,6 @@ export default function LeadsPage() {
     setAviso(`${paraExcluir.length} leads excluídos com sucesso.`);
   }
 
-  async function disparoEmLote() {
-    const paraEnviar = visiveis.filter(l => 
-      l.email && 
-      !l.email.includes("duckduckgo.com") && 
-      ["novo", "mensagem_gerada"].includes(l.status)
-    );
-    if (paraEnviar.length === 0) return setAviso("Nenhum lead com e-mail válido disponível para envio.");
-    if (!confirm(`Deseja disparar e-mails com IA para ${paraEnviar.length} leads simultaneamente?`)) return;
-    
-    let sucessos = 0;
-    const batchSize = 10;
-
-    for (let i = 0; i < paraEnviar.length; i += batchSize) {
-      const lote = paraEnviar.slice(i, i + batchSize);
-      setAviso(`Enviando lote ultrarrápido... (${Math.min(i + batchSize, paraEnviar.length)}/${paraEnviar.length})`);
-      
-      await Promise.all(lote.map(async (l) => {
-        setOcupado(l.id + ":auto");
-        try {
-          const res = await fetch("/api/enviar-automatico", {
-            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
-          });
-          const json = await res.json();
-          if (res.ok) {
-            setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
-            await atualizar(l.id, { status: "enviado", canal: "email" });
-            sucessos++;
-          }
-        } catch (err) {
-          console.error(err);
-        }
-        setOcupado(null);
-      }));
-    }
-    
-    setOcupado(null);
-    setAviso(`Disparo turbo finalizado! ${sucessos} e-mails enviados.`);
-  }
-
   async function gerarDMsEmLote() {
     const paraGerar = visiveis.filter(l => l.instagram && !msgAberta[l.id]);
     if (paraGerar.length === 0) return setAviso("Nenhum lead disponível para gerar mensagens (ou já geradas).");
