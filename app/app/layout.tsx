@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import SpinningSatellite from "@/components/SpinningSatellite";
 
 const LINKS = [
   { href: "/app",              label: "Leads",          icon: "⊕" },
@@ -36,20 +37,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-1 px-4 py-2.5">
           {/* Logo */}
-          <Link href="/app" className="flex items-center gap-2.5 shrink-0 group">
-            <motion.div 
-              whileHover={{ rotate: 90, scale: 1.1 }} 
-              transition={{ type: "spring", stiffness: 300, damping: 10 }}
-              className="relative h-8 w-8"
-            >
-              <div className="radar h-full w-full" style={{ transform: "scale(1)" }}>
-                <div className="radar-sweep group-hover:opacity-100 opacity-60" />
-                <div className="crosshair-v" style={{ left: "50%", top: "10%", bottom: "10%", width: 1 }} />
-                <div className="crosshair-h" style={{ top: "50%", left: "10%", right: "10%", height: 1 }} />
-                <span className="blip" style={{ left: "30%", top: "35%", animationDelay: "1s", width: 4, height: 4 }} />
-                <span className="blip amber" style={{ left: "60%", top: "55%", animationDelay: "2.5s", width: 4, height: 4 }} />
-              </div>
-            </motion.div>
+          <Link href="/app" className="flex items-center gap-3 shrink-0 group">
+            <SpinningSatellite className="w-8 h-8" />
             <span className="headline text-[11px] font-bold uppercase tracking-[0.15em] hidden sm:block">
               PROSPECT<span className="text-signal-glow">AI</span>
             </span>

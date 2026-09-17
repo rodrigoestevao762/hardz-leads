@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabaseBrowser } from "@/lib/supabase-browser";
+import SpinningSatellite from "@/components/SpinningSatellite";
 
 function MiniRadar() {
   return (
@@ -80,7 +81,7 @@ export default function LoginPage() {
             animate={{ y: [-10, 10, -10] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           >
-            <MiniRadar />
+            <SpinningSatellite className="w-[300px] h-[300px]" />
           </motion.div>
         </div>
         <div className="relative">
@@ -105,9 +106,9 @@ export default function LoginPage() {
           className="w-full max-w-sm"
         >
           <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="radar h-10 w-10"><div className="radar-sweep" /></div>
+            <SpinningSatellite className="w-10 h-10" />
             <Link href="/" className="headline text-sm font-bold uppercase tracking-widest">
-              Prospectando<span className="text-signal-glow">AI</span>
+              PROSPECT<span className="text-signal-glow">AI</span>
             </Link>
           </div>
           
