@@ -115,7 +115,7 @@ export default function CyberpunkLanding() {
               <span className="text-[10px] mono text-[#10b981] uppercase tracking-widest">Sistemas Operacionais</span>
             </div>
             <Link href="/login" className="btn-3d px-6 py-3 rounded-xl border border-[#38bdf8]/30 bg-[#38bdf8]/10 text-xs font-bold tracking-widest uppercase text-[#38bdf8] hover:bg-[#38bdf8] hover:text-black transition-all shadow-[0_0_20px_rgba(56,189,248,0.1)]">
-              [ INIT UPLINK ]
+              [ INICIAR CONEXÃO ]
             </Link>
           </motion.div>
         </div>
