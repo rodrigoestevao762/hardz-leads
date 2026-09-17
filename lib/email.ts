@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-const LIMITE_POR_DIA = 80;
+const LIMITE_POR_DIA = 450;
 
 type LeadEmail = { id: string; nome: string; email: string | null };
 
