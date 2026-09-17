@@ -194,7 +194,7 @@ export default function LeadsPage() {
     if (!confirm(`Deseja acionar a IA para vasculhar a internet atrás dos contatos de ${semInsta.length} leads simultaneamente?`)) return;
     
     let sucessos = 0;
-    const batchSize = 10;
+    const batchSize = 30; // Acelerado Mega Brain
     for (let i = 0; i < semInsta.length; i += batchSize) {
       const lote = semInsta.slice(i, i + batchSize);
       setAviso(`Enriquecendo lote... (${Math.min(i + batchSize, semInsta.length)}/${semInsta.length})`);
@@ -277,28 +277,31 @@ export default function LeadsPage() {
     
     let sucessos = 0;
     
-    // Processamento sequencial para não atingir o Rate Limit do Gemini (15 RPM free)
-    for (let i = 0; i < paraGerar.length; i++) {
-      const l = paraGerar[i];
-      setAviso(`Gerando mensagens com IA... (${i + 1}/${paraGerar.length})`);
-      setOcupado(l.id + ":gerar");
+    // Processamento otimizado: lotes paralelos de 3 para ser mais rápido mas seguro contra rate limit (Gemini Free)
+    const batchSize = 3;
+    for (let i = 0; i < paraGerar.length; i += batchSize) {
+      const lote = paraGerar.slice(i, i + batchSize);
+      setAviso(`Gerando mensagens turbo... (${Math.min(i + batchSize, paraGerar.length)}/${paraGerar.length})`);
       
-      try {
-        const res = await fetch("/api/gerar-mensagem", {
-          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
-        });
-        const json = await res.json();
-        if (res.ok) {
-          setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
-          await atualizar(l.id, { status: "mensagem_gerada" });
-          sucessos++;
+      await Promise.all(lote.map(async (l) => {
+        setOcupado(l.id + ":gerar");
+        try {
+          const res = await fetch("/api/gerar-mensagem", {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
+          });
+          const json = await res.json();
+          if (res.ok) {
+            setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
+            await atualizar(l.id, { status: "mensagem_gerada" });
+            sucessos++;
+          }
+        } catch (err) {
+          console.error(err);
         }
-      } catch (err) {
-        console.error(err);
-      }
-      setOcupado(null);
-      // Pequeno delay entre requisições
-      await new Promise(r => setTimeout(r, 1000));
+        setOcupado(null);
+      }));
+      // Pequeno delay para desafogar a API
+      await new Promise(r => setTimeout(r, 600));
     }
     
     setOcupado(null);
@@ -308,12 +311,10 @@ export default function LeadsPage() {
   async function limparTodos() {
     const sb = supabaseBrowser();
     if (visiveis.length === 0) return setAviso("Nenhum lead visível para excluir.");
-    
-    // Confirmação extra para evitar acidentes
     if (!confirm(`⚠️ ATENÇÃO: Você está prestes a EXCLUIR DEFINITIVAMENTE ${visiveis.length} leads da tela atual.\n\nTem certeza absoluta?`)) return;
     
     setAviso(`Excluindo ${visiveis.length} leads...`);
-    const ids = visiveis.map(l => l.id);
+    const ids = visiveis.map((l) => l.id);
     
     // Delete in batches of 50 to avoid URL too long issues if there are many
     for (let i = 0; i < ids.length; i += 50) {
@@ -323,6 +324,52 @@ export default function LeadsPage() {
     
     setLeads((ls) => ls.filter((l) => !ids.includes(l.id)));
     setAviso(`${visiveis.length} leads excluídos com sucesso.`);
+  }
+
+  async function disparoEmLote() {
+    const paraEnviar = visiveis.filter(l => 
+      l.email && 
+      !l.email.includes("duckduckgo.com") && 
+      ["novo", "mensagem_gerada"].includes(l.status)
+    );
+    if (paraEnviar.length === 0) return setAviso("Nenhum lead com e-mail válido disponível para envio.");
+    if (!confirm(`Deseja disparar e-mails com IA para ${paraEnviar.length} leads simultaneamente?`)) return;
+    
+    let sucessos = 0;
+    let ultErro = "";
+    const batchSize = 15; // Acelerado
+
+    for (let i = 0; i < paraEnviar.length; i += batchSize) {
+      const lote = paraEnviar.slice(i, i + batchSize);
+      setAviso(`Enviando e-mails turbo... (${Math.min(i + batchSize, paraEnviar.length)}/${paraEnviar.length})`);
+      
+      await Promise.all(lote.map(async (l) => {
+        setOcupado(l.id + ":auto");
+        try {
+          const res = await fetch("/api/enviar-automatico", {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
+          });
+          const json = await res.json();
+          if (res.ok) {
+            setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
+            await atualizar(l.id, { status: "enviado", canal: "email" });
+            sucessos++;
+          } else {
+            ultErro = json.erro || "Erro desconhecido";
+          }
+        } catch (err) {
+          console.error(err);
+        }
+        setOcupado(null);
+      }));
+    }
+    
+    setOcupado(null);
+    if (sucessos > 0) {
+      setAviso(`Processamento turbo concluído! ${sucessos} e-mails disparados com sucesso.`);
+    } else {
+      setAviso(`Falha no disparo! Verifique a configuração de E-mail/Senha de App. Erro: ${ultErro}`);
+    }
   }
 
   const contagem = {
