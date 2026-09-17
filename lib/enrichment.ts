@@ -1,13 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Função auxiliar para fazer o fetch com timeout e headers que disfarçam o bot
-// Proxy via Google Translate para burlar os bloqueios de IP da Vercel
 async function fetchHtml(url: string): Promise<string> {
   try {
-    const proxyUrl = `https://translate.google.com/translate?sl=en&tl=es&u=${encodeURIComponent(url)}`;
-    const res = await fetch(proxyUrl, {
+    const res = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
       },
       signal: AbortSignal.timeout(6000)
     });
@@ -53,8 +53,8 @@ function extractSocialLinks(html: string) {
   });
 
   // Extrai Emails
-  // Remove lixo URL-encoded que os motores de busca geram (%22, %2B)
-  const htmlLimpo = html.replace(/%22/g, '"').replace(/%2B/ig, '+').replace(/%40/ig, '@');
+  // Remove lixo URL-encoded que os motores de busca geram (%22, %2B, %20)
+  const htmlLimpo = html.replace(/%22/g, '"').replace(/%2B/ig, '+').replace(/%40/ig, '@').replace(/%20/g, ' ');
   
   // Regex RESTRETO: removemos o '+' do prefixo. O '+' é o caractere de 'espaço' em URLs, 
   // o que causava a captura de buscas inteiras tipo '22+roma+@gmail.com'
