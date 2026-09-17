@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import RealisticGlobe from "@/components/RealisticGlobe";
+import UltraRadar from "@/components/UltraRadar";
 
 const FEATURES = [
   { n: "01", titulo: "MAPEAMENTO GLOBAL OSINT", desc: "O radar varre o globo em tempo real. Nossa engine OSINT identifica milhares de empresas desprotegidas por segundo, varrendo as coordenadas de todos os pólos comerciais do planeta.", cor: "#38bdf8", colSpan: "md:col-span-2", icon: "🌍" },
@@ -122,8 +123,16 @@ export default function CyberpunkLanding() {
       </nav>
 
       {/* ======================= HERO ======================= */}
-      <section className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-6 text-center pt-20">
+      <section id="inicio" className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-6 text-center pt-20 overflow-hidden">
         
+        {/* Background Ultra Radars */}
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] opacity-30 pointer-events-none mix-blend-screen" style={{ transform: "perspective(1000px) rotateX(40deg) rotateY(20deg)" }}>
+          <UltraRadar color="#38bdf8" />
+        </div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[800px] h-[800px] opacity-20 pointer-events-none mix-blend-screen" style={{ transform: "perspective(1000px) rotateX(-40deg) rotateY(-20deg)" }}>
+          <UltraRadar color="#8b5cf6" />
+        </div>
+
         {/* Subtle top glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#38bdf8] opacity-15 blur-[120px] pointer-events-none rounded-full" />
 
