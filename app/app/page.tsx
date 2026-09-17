@@ -147,16 +147,36 @@ export default function LeadsPage() {
     atualizar(l.id, { status: "enviado", canal: "dm" });
   }
 
-  async function enriquecerLead(l: Lead) {
-    setOcupado(l.id + ":enriquecer"); setAviso(null);
+  async function abrirWhatsApp(l: Lead) {
+    if (!l.telefone) return setAviso("Lead sem Telefone — edite e adicione o número.");
+    if (!msgAberta[l.id]) return setAviso("Gere a mensagem primeiro antes de enviar.");
+    navigator.clipboard.writeText(msgAberta[l.id]);
+    const num = l.telefone.replace(/\D/g, "");
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(msgAberta[l.id])}`, "_blank");
+    atualizar(l.id, { status: "enviado", canal: "dm" });
+  }
+
+  async function abrirFacebook(l: Lead) {
+    if (!l.facebook) return setAviso("Lead sem Facebook.");
+    if (!msgAberta[l.id]) return setAviso("Gere a mensagem primeiro antes de enviar.");
+    navigator.clipboard.writeText(msgAberta[l.id]);
+    window.open(l.facebook, "_blank");
+    atualizar(l.id, { status: "enviado", canal: "dm" });
+  }
+
+  async function enriquecerLead(l: Lead, bulk = false) {
+    if (!bulk) { setOcupado(l.id + ":enriquecer"); setAviso(null); }
     const res = await fetch("/api/enrich", {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id, nome: l.nome, cidade: l.cidade, pais: l.pais }),
     });
     const json = await res.json();
-    setOcupado(null);
-    if (!res.ok) return setAviso("Erro no enriquecimento: " + json.error);
+    if (!bulk) setOcupado(null);
+    if (!res.ok) {
+      if (!bulk) setAviso("Erro no enriquecimento: " + json.error);
+      return;
+    }
     setLeads((ls) => ls.map((lead) => (lead.id === l.id ? { ...lead, ...json.lead } : lead)));
-    setAviso(`Enriquecimento de ${l.nome} concluído com sucesso!`);
+    if (!bulk) setAviso(`Enriquecimento de ${l.nome} concluído com sucesso!`);
   }
 
   async function enriquecerEmLote() {
@@ -165,14 +185,14 @@ export default function LeadsPage() {
     if (!confirm(`Deseja acionar a IA para vasculhar a internet atrás dos contatos de ${semInsta.length} leads simultaneamente?`)) return;
     
     let sucessos = 0;
-    const batchSize = 10; // Process 10 at a time in parallel
+    const batchSize = 10;
     for (let i = 0; i < semInsta.length; i += batchSize) {
       const lote = semInsta.slice(i, i + batchSize);
       setAviso(`Enriquecendo lote... (${Math.min(i + batchSize, semInsta.length)}/${semInsta.length})`);
       
       await Promise.all(lote.map(async (l) => {
         setOcupado(l.id + ":enriquecer");
-        await enriquecerLead(l);
+        await enriquecerLead(l, true);
       }));
       sucessos += lote.length;
     }
@@ -191,9 +211,9 @@ export default function LeadsPage() {
 
   async function limparSemRedes() {
     const sb = supabaseBrowser();
-    const paraExcluir = visiveis.filter(l => !l.instagram && !l.email);
-    if (paraExcluir.length === 0) return setAviso("Nenhum lead sem rede encontrado.");
-    if (!confirm(`Tem certeza que deseja excluir ${paraExcluir.length} leads sem Instagram/E-mail?`)) return;
+    const paraExcluir = visiveis.filter(l => !l.instagram);
+    if (paraExcluir.length === 0) return setAviso("Nenhum lead sem Instagram encontrado.");
+    if (!confirm(`Tem certeza que deseja excluir ${paraExcluir.length} leads sem Instagram?`)) return;
     
     setAviso(`Excluindo ${paraExcluir.length} leads...`);
     const ids = paraExcluir.map(l => l.id);
@@ -242,38 +262,38 @@ export default function LeadsPage() {
   }
 
   async function gerarDMsEmLote() {
-    const paraGerar = visiveis.filter(l => l.instagram && l.status === "novo");
-    if (paraGerar.length === 0) return setAviso("Nenhum lead novo com Instagram disponível para gerar mensagens.");
-    if (!confirm(`Deseja gerar mensagens persuasivas via IA para ${paraGerar.length} leads do Instagram simultaneamente?`)) return;
+    const paraGerar = visiveis.filter(l => l.instagram && !msgAberta[l.id]);
+    if (paraGerar.length === 0) return setAviso("Nenhum lead disponível para gerar mensagens (ou já geradas).");
+    if (!confirm(`Deseja gerar mensagens persuasivas via IA para ${paraGerar.length} leads simultaneamente?`)) return;
     
     let sucessos = 0;
-    const batchSize = 10;
     
-    for (let i = 0; i < paraGerar.length; i += batchSize) {
-      const lote = paraGerar.slice(i, i + batchSize);
-      setAviso(`Gerando mensagens com IA... (${Math.min(i + batchSize, paraGerar.length)}/${paraGerar.length})`);
+    // Processamento sequencial para não atingir o Rate Limit do Gemini (15 RPM free)
+    for (let i = 0; i < paraGerar.length; i++) {
+      const l = paraGerar[i];
+      setAviso(`Gerando mensagens com IA... (${i + 1}/${paraGerar.length})`);
+      setOcupado(l.id + ":gerar");
       
-      await Promise.all(lote.map(async (l) => {
-        setOcupado(l.id + ":gerar");
-        try {
-          const res = await fetch("/api/gerar-mensagem", {
-            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
-          });
-          const json = await res.json();
-          if (res.ok) {
-            setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
-            await atualizar(l.id, { status: "mensagem_gerada" });
-            sucessos++;
-          }
-        } catch (err) {
-          console.error(err);
+      try {
+        const res = await fetch("/api/gerar-mensagem", {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
+          await atualizar(l.id, { status: "mensagem_gerada" });
+          sucessos++;
         }
-        setOcupado(null);
-      }));
+      } catch (err) {
+        console.error(err);
+      }
+      setOcupado(null);
+      // Pequeno delay entre requisições
+      await new Promise(r => setTimeout(r, 1000));
     }
     
     setOcupado(null);
-    setAviso(`Processamento turbo concluído! ${sucessos} DMs geradas e prontas para envio.`);
+    setAviso(`DMs geradas para ${sucessos} leads!`);
   }
 
   async function limparTodos() {
@@ -441,10 +461,24 @@ export default function LeadsPage() {
                     ⧉ copiar
                   </button>
                 )}
-                <button onClick={() => abrirDM(l)}
-                  className="mono rounded-lg bg-gradient-to-r from-[#833ab4]/80 via-[#d6249f]/80 to-[#fcaf45]/80 px-3.5 py-2 text-[10px] uppercase tracking-widest text-white transition hover:brightness-110">
-                  ◆ abrir DM
-                </button>
+                {l.instagram && (
+                  <button onClick={() => abrirDM(l)}
+                    className="mono rounded-lg bg-gradient-to-r from-[#833ab4]/80 via-[#d6249f]/80 to-[#fcaf45]/80 px-3.5 py-2 text-[10px] uppercase tracking-widest text-white transition hover:brightness-110">
+                    📸 Instagram
+                  </button>
+                )}
+                {l.telefone && (
+                  <button onClick={() => abrirWhatsApp(l)}
+                    className="mono rounded-lg bg-[#25D366]/80 px-3.5 py-2 text-[10px] uppercase tracking-widest text-white transition hover:brightness-110">
+                    💬 WhatsApp
+                  </button>
+                )}
+                {l.facebook && (
+                  <button onClick={() => abrirFacebook(l)}
+                    className="mono rounded-lg bg-[#1877F2]/80 px-3.5 py-2 text-[10px] uppercase tracking-widest text-white transition hover:brightness-110">
+                    📘 Facebook
+                  </button>
+                )}
                 <button onClick={() => router.push(`/app/editor/${l.id}`)}
                   className="mono rounded-lg bg-[#c9974c]/15 px-3.5 py-2 text-[10px] uppercase tracking-widest text-[#c9974c] shadow-[inset_0_0_0_1px_rgba(201,151,76,0.4)] transition hover:bg-[#c9974c]/25">
                   ✦ landing

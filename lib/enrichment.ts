@@ -96,19 +96,29 @@ async function searchBrave(query: string): Promise<string> {
   return await fetchHtml(`https://search.brave.com/search?q=${encodeURIComponent(query)}`);
 }
 
+async function searchAsk(query: string): Promise<string> {
+  return await fetchHtml(`https://www.ask.com/web?q=${encodeURIComponent(query)}`);
+}
+
+async function searchEcosia(query: string): Promise<string> {
+  return await fetchHtml(`https://www.ecosia.org/search?q=${encodeURIComponent(query)}`);
+}
+
 export async function enrichLeadData(nome: string, cidade: string, uf: string = '') {
   const queryPadrao = `"${nome}" ${cidade} ${uf}`.trim();
   
-  // Dispara buscas paralelas em 5 motores diferentes
-  const [htmlYahoo, htmlBing, htmlDuck, htmlQwant, htmlBrave] = await Promise.all([
+  // Dispara buscas paralelas em 7 motores diferentes para precisão ultra
+  const [htmlYahoo, htmlBing, htmlDuck, htmlQwant, htmlBrave, htmlAsk, htmlEcosia] = await Promise.all([
     searchYahoo(`${queryPadrao} contato email`),
     searchBing(`${queryPadrao} "@gmail.com" OR "@hotmail.com"`),
     searchDuckDuckGo(`${queryPadrao} site:instagram.com`),
     searchQwant(`${nome} ${cidade} instagram oficial`),
-    searchBrave(`${nome} ${cidade} email contato`)
+    searchBrave(`${nome} ${cidade} email contato`),
+    searchAsk(`"${nome}" ${cidade} instagram OR email`),
+    searchEcosia(`${nome} ${cidade} contato email instagram`)
   ]);
   
-  const htmlUnificado = htmlYahoo + " " + htmlBing + " " + htmlDuck + " " + htmlQwant + " " + htmlBrave;
+  const htmlUnificado = htmlYahoo + " " + htmlBing + " " + htmlDuck + " " + htmlQwant + " " + htmlBrave + " " + htmlAsk + " " + htmlEcosia;
   
   const links = extractSocialLinks(htmlUnificado);
   
@@ -118,6 +128,8 @@ export async function enrichLeadData(nome: string, cidade: string, uf: string = 
   if (htmlBing.length > 0) fontesUsadas.push('Bing');
   if (htmlQwant.length > 0) fontesUsadas.push('Qwant');
   if (htmlBrave.length > 0) fontesUsadas.push('Brave');
+  if (htmlAsk.length > 0) fontesUsadas.push('Ask');
+  if (htmlEcosia.length > 0) fontesUsadas.push('Ecosia');
   
   return {
     instagram: links.instagram,
@@ -148,6 +160,12 @@ export async function radarInstagram(nicho: string, cidade: string) {
   const instaMatches = htmlUnificado.match(/instagram\.com\/([A-Za-z0-9_.]+)/gi) || [];
   
   const usernames = new Set<string>();
+  
+  const usernamesBloqueados = [
+    "tripadvisor", "ifood", "ifoodbrasil", "ubereats", "rappi", "zomato", "facebook", "duckduckgo", 
+    "google", "qwantcom", "yahoo", "bing", "explore", "p", "reel", "reels", "stories", "tags", "about", 
+    "developer", "tv", "help", "legal", "privacy", "terms", "directory", "profiles", "locations"
+  ];
   
   for (const match of instaMatches) {
     const parts = match.split('/');

@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     const { data: settings } = await sb
       .from("settings").select("negocio_nome, servico, diferenciais").eq("user_id", user.id).single();
 
-    const negocio = settings || { negocio_nome: "Prospectando AI", servico: "Criação de sites profissionais", diferenciais: "Site próprio que aparece no Google, entrega rápida" };
+    const negocio = settings || { negocio_nome: "HardZ Sites", servico: "Criação de sites profissionais", diferenciais: "Site próprio que aparece no Google, entrega rápida" };
 
     const { texto, fonte } = await gerarMensagem(
       {

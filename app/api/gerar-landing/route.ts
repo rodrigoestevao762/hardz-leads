@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     let textos: TextosLanding = textosPadrao(dados);
 
     if (apiKey) {
-      const idioma = idiomaDoPais(lead.pais || "");
+      const idioma = idiomaDoPais(lead.pais || "", lead.cidade || "");
       const prompt = `Você escreve textos de landing page para pequenos negócios. Gere conteúdo para a landing page do negócio abaixo, ESCREVENDO TUDO EM ${idioma.toUpperCase()}.
 
 Negócio: ${lead.nome}
