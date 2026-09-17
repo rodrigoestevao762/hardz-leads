@@ -57,3 +57,4 @@ export default function UltraRadar({ className = "", color = "#38bdf8" }: { clas
     </div>
   );
 }
+

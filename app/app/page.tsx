@@ -390,7 +390,7 @@ export default function LeadsPage() {
               <motion.span
                 layoutId="aba-indicator"
                 className="absolute inset-0 rounded-lg"
-                style={{ background: 'rgba(45,255,180,0.1)', border: '1px solid rgba(45,255,180,0.3)' }}
+                style={{ background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.3)' }}
                 transition={{ type: "spring", stiffness: 500, damping: 35 }}
               />
             )}

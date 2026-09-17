@@ -186,7 +186,7 @@ export default function MapaPage() {
                 <div className="radar w-16 h-16 mb-4">
                   <div className="radar-sweep" />
                 </div>
-                <p className="mono text-xs uppercase tracking-widest text-[var(--signal)] drop-shadow-[0_0_10px_rgba(45,255,180,0.8)]">
+                <p className="mono text-xs uppercase tracking-widest text-[var(--signal)] drop-shadow-[0_0_10px_rgba(56,189,248,0.8)]">
                   consultando rede global...
                 </p>
               </motion.div>
@@ -201,7 +201,7 @@ export default function MapaPage() {
         <div className="w-full lg:w-96 lg:shrink-0">
           {centro && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-2 mb-2 items-start">
-              <p className="mono text-[11px] uppercase tracking-widest text-[var(--signal)] drop-shadow-[0_0_5px_rgba(45,255,180,0.5)]">
+              <p className="mono text-[11px] uppercase tracking-widest text-[var(--signal)] drop-shadow-[0_0_5px_rgba(56,189,248,0.5)]">
                 📍 {centro.cidade}{centro.pais ? `, ${centro.pais}` : ""} — {resultados?.length} alvos encontrados
               </p>
               {resultados && resultados.length > 0 && (
@@ -228,7 +228,7 @@ export default function MapaPage() {
                   <motion.div 
                     key={emp.osmId} id={id}
                     initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.05 }}
-                    className={`panel lead-card rounded-xl p-3 transition-all duration-300 hover:scale-[1.02] ${selecionado === emp.osmId ? "shadow-[0_0_15px_rgba(45,255,180,0.3)] border-[var(--signal)]" : ""}`}
+                    className={`panel lead-card rounded-xl p-3 transition-all duration-300 hover:scale-[1.02] ${selecionado === emp.osmId ? "shadow-[0_0_15px_rgba(56,189,248,0.3)] border-[var(--signal)]" : ""}`}
                     style={{ "--lead-color": CORES[emp.nivel] } as any}
                   >
                     <div className="flex items-center gap-2">

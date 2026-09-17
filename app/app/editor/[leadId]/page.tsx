@@ -288,7 +288,7 @@ export default function EditorLanding() {
       )}
 
       {/* Preview */}
-      <div className="overflow-hidden rounded-2xl border border-[var(--signal)]/30 shadow-[0_0_30px_rgba(45,255,180,0.05)] bg-[#030603]">
+      <div className="overflow-hidden rounded-2xl border border-[var(--signal)]/30 shadow-[0_0_30px_rgba(56,189,248,0.05)] bg-[#030603]">
         <iframe ref={iframeRef} srcDoc={srcDoc} title="Pré-visualização da landing"
           sandbox="allow-same-origin"
           className="h-[75vh] w-full bg-white transition-opacity duration-300" />

@@ -33,7 +33,7 @@ function getFonteStyle(fonte: string) {
   if (fonte.includes("rappi"))
     return { bg: "rgba(249,115,22,0.15)", border: "rgba(249,115,22,0.35)", color: "#f97316", label: "Rappi" };
   if (fonte.includes("overpass"))
-    return { bg: "rgba(45,255,180,0.12)", border: "rgba(45,255,180,0.3)", color: "#2dffb4", label: "OpenStreetMap" };
+    return { bg: "rgba(56,189,248,0.12)", border: "rgba(56,189,248,0.3)", color: "#38bdf8", label: "OpenStreetMap" };
   return { bg: "rgba(148,163,184,0.1)", border: "rgba(148,163,184,0.2)", color: "#94a3b8", label: fonte };
 }
 
@@ -483,9 +483,9 @@ export default function FoodsRadarPage() {
                           <span
                             className="mono rounded-full px-2 py-0.5 text-[9px] uppercase tracking-widest border"
                             style={{
-                              background: "rgba(45,255,180,0.1)",
-                              borderColor: "rgba(45,255,180,0.3)",
-                              color: "#2dffb4",
+                              background: "rgba(56,189,248,0.1)",
+                              borderColor: "rgba(56,189,248,0.3)",
+                              color: "#38bdf8",
                             }}
                           >
                             ✉ Email
@@ -544,9 +544,9 @@ export default function FoodsRadarPage() {
                       style={
                         salvo
                           ? {
-                              background: "rgba(45,255,180,0.1)",
-                              color: "#2dffb4",
-                              border: "1px solid rgba(45,255,180,0.25)",
+                              background: "rgba(56,189,248,0.1)",
+                              color: "#38bdf8",
+                              border: "1px solid rgba(56,189,248,0.25)",
                               borderRadius: "0.65rem",
                               padding: "0.4rem 1rem",
                               fontFamily: "var(--font-mono, monospace)",

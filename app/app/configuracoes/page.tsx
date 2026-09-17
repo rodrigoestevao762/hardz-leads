@@ -68,7 +68,7 @@ export default function ConfigPage() {
 
       <motion.div 
         variants={containerVariants} initial="hidden" animate="show"
-        className="panel mt-7 space-y-6 rounded-3xl p-6 md:p-8 bg-black/40 backdrop-blur-xl border border-white/5 shadow-[0_0_40px_rgba(45,255,180,0.03)]"
+        className="panel mt-7 space-y-6 rounded-3xl p-6 md:p-8 bg-black/40 backdrop-blur-xl border border-white/5 shadow-[0_0_40px_rgba(56,189,248,0.03)]"
       >
         <motion.div variants={itemVariants}>
           <label className="mono mb-2 block text-[10px] uppercase tracking-widest text-[var(--ink-dim)]">Nome da Operação (Seu Negócio)</label>
@@ -113,7 +113,7 @@ export default function ConfigPage() {
         <motion.div variants={itemVariants} className="pt-2">
           <button 
             onClick={salvar} 
-            className={`w-full py-3 text-[11px] transition-all ${salvo ? "btn-3d btn-3d-ghost" : "btn-3d btn-3d-primary shadow-[0_0_20px_rgba(45,255,180,0.2)]"}`}
+            className={`w-full py-3 text-[11px] transition-all ${salvo ? "btn-3d btn-3d-ghost" : "btn-3d btn-3d-primary shadow-[0_0_20px_rgba(56,189,248,0.2)]"}`}
           >
             {salvo ? "✓ DADOS SINCRONIZADOS" : "ATUALIZAR NÚCLEO"}
           </button>

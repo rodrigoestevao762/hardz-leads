@@ -51,7 +51,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
             </motion.div>
             <span className="headline text-[11px] font-bold uppercase tracking-[0.15em] hidden sm:block">
-              Prospectando<span className="text-signal-glow">AI</span>
+              PROSPECT<span className="text-signal-glow">AI</span>
             </span>
           </Link>
 
@@ -71,7 +71,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   {active && (
                     <motion.div
                       layoutId="active-nav-tab"
-                      className="absolute inset-0 bg-[rgba(45,255,180,0.12)] rounded-lg border border-[rgba(45,255,180,0.3)] shadow-[0_0_16px_rgba(45,255,180,0.08)]"
+                      className="absolute inset-0 bg-[rgba(56,189,248,0.12)] rounded-lg border border-[rgba(56,189,248,0.3)] shadow-[0_0_16px_rgba(56,189,248,0.08)]"
                       transition={{ type: "spring", stiffness: 350, damping: 30 }}
                       style={{ zIndex: -1 }}
                     />
@@ -121,7 +121,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {active && (
                 <motion.div
                   layoutId="mobile-nav-tab"
-                  className="absolute inset-0 bg-[rgba(0,255,65,0.08)] rounded-xl"
+                  className="absolute inset-0 bg-[rgba(56,189,248,0.08)] rounded-xl"
                   transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   style={{ zIndex: 0 }}
                 />
