@@ -42,16 +42,27 @@ export async function POST(req: Request) {
     // Busca os dados enriquecidos
     const enriquecido = await enrichLeadData(nome, cidade, pais);
 
+    // Busca o lead atual para proteger dados existentes
+    const { data: lead } = await supabase
+      .from('leads')
+      .select('facebook, instagram, email')
+      .eq('id', leadId)
+      .eq('user_id', session.user.id)
+      .single();
+
+    // Protege os dados já existentes (como emails precisos do Outscraper) para não serem sobrescritos por OSINT inferior
+    const updatePayload: any = {
+      fontes: enriquecido.fontes,
+      enriquecido_em: new Date().toISOString(),
+    };
+    if (!lead?.facebook && enriquecido.facebook) updatePayload.facebook = enriquecido.facebook;
+    if (!lead?.instagram && enriquecido.instagram) updatePayload.instagram = enriquecido.instagram;
+    if (!lead?.email && enriquecido.email) updatePayload.email = enriquecido.email;
+
     // Atualiza o lead no Supabase
     const { data: updatedLead, error } = await supabase
       .from('leads')
-      .update({
-        facebook: enriquecido.facebook || null,
-        instagram: enriquecido.instagram || null,
-        email: enriquecido.email || null,
-        fontes: enriquecido.fontes,
-        enriquecido_em: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq('id', leadId)
       .eq('user_id', session.user.id)
       .select()

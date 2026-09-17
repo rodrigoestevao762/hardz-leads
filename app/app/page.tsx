@@ -238,11 +238,11 @@ export default function LeadsPage() {
     
     let sucessos = 0;
     
-    // Processamento otimizado: lotes paralelos de 3 para ser mais rápido mas seguro contra rate limit (Gemini Free)
-    const batchSize = 3;
+    // Para não estourar o limite de 15 RPM do Gemini Free (429 Too Many Requests), processamos 1 por 1 com 4.5s de delay
+    const batchSize = 1;
     for (let i = 0; i < paraGerar.length; i += batchSize) {
       const lote = paraGerar.slice(i, i + batchSize);
-      setAviso(`Gerando mensagens turbo... (${Math.min(i + batchSize, paraGerar.length)}/${paraGerar.length})`);
+      setAviso(`Gerando mensagens com IA (Evitando bloqueios)... (${Math.min(i + batchSize, paraGerar.length)}/${paraGerar.length})`);
       
       await Promise.all(lote.map(async (l) => {
         setOcupado(l.id + ":gerar");
@@ -261,8 +261,8 @@ export default function LeadsPage() {
         }
         setOcupado(null);
       }));
-      // Pequeno delay para desafogar a API
-      await new Promise(r => setTimeout(r, 600));
+      // 4500ms garante no máximo ~13 requisições por minuto, evitando o fallback pro template em Português
+      await new Promise(r => setTimeout(r, 4500));
     }
     
     setOcupado(null);

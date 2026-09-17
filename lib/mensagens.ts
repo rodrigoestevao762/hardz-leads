@@ -36,11 +36,30 @@ Regras RIGOROSAS:
 
 function templateMsg(l: MsgInput): string {
   const cat = getCategoria(l.categoria)?.label || l.categoria;
+  const isEng = l.pais?.toLowerCase().match(/us|united states|uk|kingdom|canada|australia|england|ireland|zealand/);
+  const isEsp = l.pais?.toLowerCase().match(/spain|mexico|colombia|argentina|peru|chile|ecuador|guatemala|cuba|bolivia|dominican|honduras|paraguay|salvador|nicaragua|costa rica|puerto rico|panama|uruguay|espa/);
+
+  const nome = l.negocio.negocio_nome;
+  const nomePais = l.pais || l.cidade;
+
+  if (isEng) {
+    const gancho = l.temSite
+      ? `I noticed you already have an online presence and I'd love to help you take it to the next level`
+      : `I noticed your ${cat.toLowerCase()} doesn't have a dedicated website — meaning people searching on Google today can't easily find you`;
+    return `Hi ${l.nome}! I'm with ${nome} and ${gancho}. We build professional websites for ${cat.toLowerCase()}s in ${l.cidade} (${nomePais}) — combining your services, photos, and bookings in one place, fully visible on Google. Can I send you a quick preview of how it would look?`;
+  }
+
+  if (isEsp) {
+    const gancho = l.temSite
+      ? `vi que ya tienen presencia en línea y me encantaría ayudarles a llevarla al siguiente nivel`
+      : `vi que su ${cat.toLowerCase()} opera sin un sitio web propio — lo que significa que quienes buscan en Google hoy no los encuentran`;
+    return `¡Hola, ${l.nome}! Soy de ${nome} y ${gancho}. Creamos sitios web profesionales para ${cat.toLowerCase()} en ${l.cidade} (${nomePais}) — servicios, fotos y reservas en un solo lugar, visibles en Google. ¿Puedo enviarles una vista previa de cómo se vería?`;
+  }
+
+  // Fallback padrão (PT-BR)
   const gancho = l.temSite
     ? `vi que vocês já têm presença online e quero ajudar a levar isso para o próximo nível`
     : `vi que o ${cat.toLowerCase()} de vocês opera sem site próprio — ou seja, quem pesquisa no Google hoje não encontra vocês`;
-  const nome = l.negocio.negocio_nome;
-  const nomePais = l.pais || l.cidade;
   return `Olá, ${l.nome}! Sou da ${nome} e ${gancho}. Criamos sites profissionais para ${cat.toLowerCase()} em ${l.cidade} (${nomePais}) — serviços, fotos e agendamento num só lugar, visível no Google. Posso mandar uma prévia de como ficaria?`;
 }
 
