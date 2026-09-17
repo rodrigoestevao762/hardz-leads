@@ -39,13 +39,15 @@ function extractSocialLinks(html: string) {
   const facebook = fbMatches.find(link => !link.includes('/groups/') && !link.includes('/events/') && !link.includes('/public/') && !link.includes('/share.php'));
 
   // Extrai Emails
-  const emailMatches = html.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
+  // Remove caracteres percentuais do regex para evitar lixo URL-encoded (como %22+or+%22@hotmail.com)
+  const emailMatches = html.match(/[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
   
   // Filtra e-mails sujos (falsos positivos dos motores ou imagens)
   const dominiosBloqueados = [
     "duckduckgo", "sentry", "example", "w3.org", "sijax", "bing.com", "yahoo.com",
     "google.com", "microsoft.com", "facebook.com", "instagram.com", "twitter.com",
-    "apple.com", "cloudflare.com", "ifood.com", "tripadvisor.com"
+    "apple.com", "cloudflare.com", "ifood.com", "tripadvisor.com", "tiktok.com",
+    "linkedin.com", "amazon.com", "qwant.com"
   ];
   const extensoesInvalidas = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".css", ".js"];
   
@@ -56,7 +58,11 @@ function extractSocialLinks(html: string) {
     // Rejeita domínios de motores ou corporações grandes
     if (dominiosBloqueados.some(d => l.includes(d))) return false;
     // Evita emails absurdamente grandes (falsos matches)
-    if (l.length > 50) return false;
+    if (l.length > 40) return false;
+    // Rejeita emails falsos gerados por dorks url-encoded
+    if (l.includes('+or+') || l.includes('22@')) return false;
+    // Rejeita se começar com caracteres estranhos
+    if (l.startsWith('-') || l.startsWith('.')) return false;
     return true;
   });
 
@@ -67,25 +73,28 @@ function extractSocialLinks(html: string) {
   };
 }
 
+// Novos Motores
+async function searchQwant(query: string): Promise<string> {
+  return await fetchHtml(`https://lite.qwant.com/?q=${encodeURIComponent(query)}`);
+}
+
+async function searchBrave(query: string): Promise<string> {
+  return await fetchHtml(`https://search.brave.com/search?q=${encodeURIComponent(query)}`);
+}
+
 export async function enrichLeadData(nome: string, cidade: string, uf: string = '') {
   const queryPadrao = `"${nome}" ${cidade} ${uf}`.trim();
   
-  // Dispara buscas paralelas usando Dorks específicos para maximizar o resultado
-  const [htmlYahoo, htmlBing, htmlDuck, htmlDuckBroad, htmlBingBroad] = await Promise.all([
-    // Yahoo procura genérico por contatos
+  // Dispara buscas paralelas em 5 motores diferentes
+  const [htmlYahoo, htmlBing, htmlDuck, htmlQwant, htmlBrave] = await Promise.all([
     searchYahoo(`${queryPadrao} contato email`),
-    // Bing com dorks
-    searchBing(`${queryPadrao} "@gmail.com" OR "@hotmail.com" OR "@yahoo.com"`),
-    // DuckDuckGo focado em domínios oficiais
-    searchDuckDuckGo(`${queryPadrao} site:instagram.com OR site:facebook.com`),
-    // Busca ampla no DuckDuckGo (para achar Linktrees e diretórios que listam o insta deles)
-    searchDuckDuckGo(`${nome} ${cidade} instagram perfil`),
-    // Busca ampla no Bing
-    searchBing(`${nome} ${cidade} instagram oficial`)
+    searchBing(`${queryPadrao} "@gmail.com" OR "@hotmail.com"`),
+    searchDuckDuckGo(`${queryPadrao} site:instagram.com`),
+    searchQwant(`${nome} ${cidade} instagram oficial`),
+    searchBrave(`${nome} ${cidade} email contato`)
   ]);
   
-  // Junta todo o código-fonte retornado pelas 5 varreduras
-  const htmlUnificado = htmlYahoo + " " + htmlBing + " " + htmlDuck + " " + htmlDuckBroad + " " + htmlBingBroad;
+  const htmlUnificado = htmlYahoo + " " + htmlBing + " " + htmlDuck + " " + htmlQwant + " " + htmlBrave;
   
   const links = extractSocialLinks(htmlUnificado);
   
@@ -109,18 +118,16 @@ export async function radarInstagram(nicho: string, cidade: string) {
   
   const base = `${nic} ${cid}`.trim();
   
-  // Nível Espião: 7 varreduras simultâneas com Dorks diferentes para extrair o máximo possível
-  const [h1, h2, h3, h4, h5, h6, h7] = await Promise.all([
+  // Nível Espião: varreduras simultâneas distribuídas por motores diferentes (evita rate limit)
+  const [h1, h2, h3, h4, h5] = await Promise.all([
     searchDuckDuckGo(`${base} site:instagram.com`),
-    searchDuckDuckGo(`${base} "instagram.com"`), // Sem site: para pegar menções
-    searchDuckDuckGo(`${base} instagram oficial`),
-    searchDuckDuckGo(`intitle:"${nic}" ${cid} site:instagram.com`),
-    searchBing(`${base} site:instagram.com`),
-    searchBing(`${base} instagram perfil`),
-    searchYahoo(`${base} site:instagram.com`)
+    searchBing(`${base} "instagram.com"`),
+    searchYahoo(`${base} instagram oficial`),
+    searchQwant(`${base} site:instagram.com`),
+    searchBrave(`${base} instagram perfil`)
   ]);
   
-  const htmlUnificado = h1 + " " + h2 + " " + h3 + " " + h4 + " " + h5 + " " + h6 + " " + h7;
+  const htmlUnificado = h1 + " " + h2 + " " + h3 + " " + h4 + " " + h5;
   
   const instaMatches = htmlUnificado.match(/instagram\.com\/([A-Za-z0-9_.]+)/gi) || [];
   
@@ -166,17 +173,16 @@ export async function radarFoods(nicho: string, cidade: string) {
   const nic = nicho.trim() || "restaurante";
   const base = `${nic} ${cid}`.trim();
 
-  // Dorks focados nas maiores plataformas de delivery/turismo
-  const [h1, h2, h3, h4, h5, h6] = await Promise.all([
-    searchDuckDuckGo(`${base} site:ifood.com.br`),
-    searchDuckDuckGo(`${base} site:ubereats.com`),
-    searchBing(`${base} site:glovoapp.com`),
-    searchBing(`${base} site:tripadvisor.com OR site:tripadvisor.com.br`),
-    searchDuckDuckGo(`${base} site:rappi.com.br OR site:rappi.com`),
-    searchYahoo(`${base} site:zomato.com OR site:just-eat.com`)
+  // Caça em apps de delivery usando 5 motores OSINT
+  const [h1, h2, h3, h4, h5] = await Promise.all([
+    searchDuckDuckGo(`${base} site:ifood.com.br OR site:ubereats.com`),
+    searchBing(`${base} site:tripadvisor.com`),
+    searchYahoo(`${base} site:rappi.com.br OR site:zomato.com`),
+    searchQwant(`${base} delivery menu cardápio`),
+    searchBrave(`"${nic}" ${cid} pedir online ifood`)
   ]);
 
-  const htmlUnificado = h1 + " " + h2 + " " + h3 + " " + h4 + " " + h5 + " " + h6;
+  const htmlUnificado = h1 + " " + h2 + " " + h3 + " " + h4 + " " + h5;
 
   // Regex para pegar URLs dos sites
   const urlsMatches = htmlUnificado.match(/https?:\/\/(www\.)?([a-zA-Z0-9.-]+)\/([^"'\s<]+)/gi) || [];
