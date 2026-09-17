@@ -29,14 +29,28 @@ async function searchYahoo(query: string): Promise<string> {
   return await fetchHtml(`https://search.yahoo.com/search?p=${encodeURIComponent(query)}`);
 }
 
-function extractSocialLinks(html: string) {
-  // Extrai Instagram (ignorando posts/reels/etc)
-  const instaMatches = html.match(/instagram\.com\/([A-Za-z0-9_.]+)/gi) || [];
-  const instagram = instaMatches.find(link => !link.includes('/p/') && !link.includes('/reel/') && !link.includes('/explore/') && !link.includes('/stories/'));
+const usernamesBloqueados = [
+  "p", "reel", "explore", "stories", "tags", "developer", "about", "legal", "directory",
+  "qwantcom", "duckduckgo", "yahoo", "bing", "google", "microsoft", "apple", "facebook",
+  "instagram", "twitter", "tripadvisor", "ifood", "ifoodbrasil", "ubereats", "rappi", "zomato",
+  "just-eat", "glovoapp", "cloudflare", "sentry", "web"
+];
 
-  // Extrai Facebook (ignorando rotas genéricas)
+function extractSocialLinks(html: string) {
+  // Extrai Instagram (ignorando posts/reels/etc e contas corporativas)
+  const instaMatches = html.match(/instagram\.com\/([A-Za-z0-9_.]+)/gi) || [];
+  const instagram = instaMatches.find(link => {
+    const user = link.split('/')[1]?.toLowerCase().split('?')[0];
+    return user && !usernamesBloqueados.includes(user);
+  });
+
+  // Extrai Facebook
   const fbMatches = html.match(/facebook\.com\/([A-Za-z0-9_.-]+)/gi) || [];
-  const facebook = fbMatches.find(link => !link.includes('/groups/') && !link.includes('/events/') && !link.includes('/public/') && !link.includes('/share.php'));
+  const facebook = fbMatches.find(link => {
+    const user = link.split('/')[1]?.toLowerCase().split('?')[0];
+    const invalidFbPaths = ['groups', 'events', 'public', 'share.php', 'profile.php'];
+    return user && !usernamesBloqueados.includes(user) && !invalidFbPaths.includes(user);
+  });
 
   // Extrai Emails
   // Remove caracteres percentuais do regex para evitar lixo URL-encoded (como %22+or+%22@hotmail.com)
@@ -133,16 +147,14 @@ export async function radarInstagram(nicho: string, cidade: string) {
   
   const instaMatches = htmlUnificado.match(/instagram\.com\/([A-Za-z0-9_.]+)/gi) || [];
   
-  const ignorar = ['/p/', '/reel/', '/explore/', '/stories/', '/tags/', '/directory/', '/developer/', '/about/', '/legal/', '/web/'];
   const usernames = new Set<string>();
   
   for (const match of instaMatches) {
-    if (ignorar.some(i => match.includes(i))) continue;
     const parts = match.split('/');
-    let user = parts[1]?.toLowerCase().trim();
+    let user = parts[1]?.toLowerCase().trim().split('?')[0];
     if (user && user.endsWith('.')) user = user.slice(0, -1);
     
-    if (user && user.length > 2 && user !== "instagram" && user !== "p") {
+    if (user && user.length > 2 && !usernamesBloqueados.includes(user)) {
       usernames.add(user);
     }
   }

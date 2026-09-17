@@ -138,7 +138,7 @@ export default function LeadsPage() {
       username = username.split("instagram.com/")[1].split("/")[0].split("?")[0];
     }
     
-    const usernamesBloqueados = ["tripadvisor", "ifood", "ifoodbrasil", "ubereats", "rappi", "zomato", "facebook", "duckduckgo", "google"];
+    const usernamesBloqueados = ["tripadvisor", "ifood", "ifoodbrasil", "ubereats", "rappi", "zomato", "facebook", "duckduckgo", "google", "qwantcom", "yahoo", "bing"];
     if (usernamesBloqueados.includes(username.toLowerCase())) {
       return setAviso(`Este Instagram (${username}) é um falso positivo de uma busca anterior. Por favor, exclua ou re-enriqueça este lead.`);
     }
