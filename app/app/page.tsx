@@ -238,11 +238,12 @@ export default function LeadsPage() {
     
     let sucessos = 0;
     
-    // Para não estourar o limite de 15 RPM do Gemini Free (429 Too Many Requests), processamos 1 por 1 com 4.5s de delay
-    const batchSize = 1;
+    // Processamento Turbo: lotes paralelos de 5 para máxima velocidade. 
+    // Se o limite do Gemini Free (15 RPM) for atingido, o backend agora traduzirá os templates automaticamente sem delay.
+    const batchSize = 5;
     for (let i = 0; i < paraGerar.length; i += batchSize) {
       const lote = paraGerar.slice(i, i + batchSize);
-      setAviso(`Gerando mensagens com IA (Evitando bloqueios)... (${Math.min(i + batchSize, paraGerar.length)}/${paraGerar.length})`);
+      setAviso(`Gerando mensagens voando... (${Math.min(i + batchSize, paraGerar.length)}/${paraGerar.length})`);
       
       await Promise.all(lote.map(async (l) => {
         setOcupado(l.id + ":gerar");
@@ -261,8 +262,8 @@ export default function LeadsPage() {
         }
         setOcupado(null);
       }));
-      // 4500ms garante no máximo ~13 requisições por minuto, evitando o fallback pro template em Português
-      await new Promise(r => setTimeout(r, 4500));
+      // Apenas um respiro mínimo para o navegador não travar
+      await new Promise(r => setTimeout(r, 100));
     }
     
     setOcupado(null);
