@@ -152,14 +152,15 @@ export async function radarInstagram(nicho: string, cidade: string) {
                       nic.toLowerCase().includes("estética") ? `${nic} spa` : nic;
 
   const base = `${nicExpanded} ${cid}`.trim();
+  const baseComAspas = `${nicExpanded} ${cid ? `"${cid}"` : ""}`.trim();
   
-  // Scrapes simples focados no instagram para garantir extração maciça sem quebrar as engines HTML
+  // Scrapes simples focados no instagram para garantir extração maciça
   const [h1, h2, h3, h4, h5, h6, h7] = await Promise.all([
-    searchDuckDuckGo(`site:instagram.com ${base}`),
-    searchBing(`${base} instagram.com`),
-    searchYahoo(`${base} instagram oficial`),
-    searchQwant(`site:instagram.com ${base}`),
-    searchBrave(`${base} instagram profile`),
+    searchDuckDuckGo(`${baseComAspas} "instagram.com"`),
+    searchBing(`${baseComAspas} instagram`),
+    searchYahoo(`${baseComAspas} instagram oficial`),
+    searchQwant(`${base} instagram profile`),
+    searchBrave(`${base} instagram.com`),
     searchAsk(`${base} instagram page`),
     searchEcosia(`${base} instagram.com`)
   ]);
@@ -173,7 +174,7 @@ export async function radarInstagram(nicho: string, cidade: string) {
   const usernamesBloqueados = [
     "tripadvisor", "ifood", "ifoodbrasil", "ubereats", "rappi", "zomato", "facebook", "duckduckgo", 
     "google", "qwantcom", "yahoo", "bing", "explore", "p", "reel", "reels", "stories", "tags", "about", 
-    "developer", "tv", "help", "legal", "privacy", "terms", "directory", "profiles", "locations"
+    "developer", "tv", "help", "legal", "privacy", "terms", "directory", "profiles", "locations", "search"
   ];
   
   for (const match of instaMatches) {
@@ -181,9 +182,9 @@ export async function radarInstagram(nicho: string, cidade: string) {
     let user = parts[1]?.toLowerCase().trim().split('?')[0];
     if (user && user.endsWith('.')) user = user.slice(0, -1);
     
-    if (user && user.length > 2 && !usernamesBloqueados.includes(user)) {
-      usernames.add(user);
-    }
+    // Ignorar urls de visualização de mídia ou internos do insta
+    if (!user || user.length < 3 || usernamesBloqueados.includes(user)) continue;
+    usernames.add(user);
   }
   
   // Limita a 100 resultados para não travar o navegador
@@ -218,16 +219,17 @@ export async function radarFoods(nicho: string, cidade: string) {
                       nic.toLowerCase().includes("pizzaria") ? `${nic} pizzeria` : nic;
 
   const base = `${nicExpanded} ${cid}`.trim();
+  const baseComAspas = `${nicExpanded} ${cid ? `"${cid}"` : ""}`.trim();
 
-  // Caça em apps de delivery globais de forma simples para não quebrar scrapers HTML
+  // Caça em apps de delivery globais de forma simples usando a força bruta de palavras-chave
   const [h1, h2, h3, h4, h5, h6, h7] = await Promise.all([
-    searchDuckDuckGo(`site:ubereats.com ${base}`),
-    searchBing(`site:tripadvisor.com ${base}`),
-    searchYahoo(`site:ifood.com.br ${base}`),
-    searchQwant(`${base} delivery menu order`),
-    searchBrave(`${base} delivery restaurant`),
-    searchAsk(`${base} delivery ifood ubereats`),
-    searchEcosia(`${base} restaurant menu`)
+    searchDuckDuckGo(`${baseComAspas} ifood OR ubereats`),
+    searchBing(`${baseComAspas} tripadvisor OR yelp`),
+    searchYahoo(`${baseComAspas} doordash OR grubhub`),
+    searchQwant(`${base} rappi OR zomato`),
+    searchBrave(`${base} just-eat OR deliveroo`),
+    searchAsk(`${base} restaurant menu delivery ifood`),
+    searchEcosia(`${base} ifood tripadvisor ubereats yelp`)
   ]);
 
   const htmlUnificado = h1 + " " + h2 + " " + h3 + " " + h4 + " " + h5 + " " + h6 + " " + h7;
