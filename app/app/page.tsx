@@ -138,6 +138,11 @@ export default function LeadsPage() {
       username = username.split("instagram.com/")[1].split("/")[0].split("?")[0];
     }
     
+    const usernamesBloqueados = ["tripadvisor", "ifood", "ifoodbrasil", "ubereats", "rappi", "zomato", "facebook", "duckduckgo", "google"];
+    if (usernamesBloqueados.includes(username.toLowerCase())) {
+      return setAviso(`Este Instagram (${username}) é um falso positivo de uma busca anterior. Por favor, exclua ou re-enriqueça este lead.`);
+    }
+
     window.open(`https://ig.me/m/${username}`, "_blank");
     atualizar(l.id, { status: "enviado", canal: "dm" });
   }
@@ -204,53 +209,71 @@ export default function LeadsPage() {
       ["novo", "mensagem_gerada"].includes(l.status)
     );
     if (paraEnviar.length === 0) return setAviso("Nenhum lead com e-mail válido disponível para envio.");
-    if (!confirm(`Deseja disparar e-mails com IA para ${paraEnviar.length} leads?`)) return;
+    if (!confirm(`Deseja disparar e-mails com IA para ${paraEnviar.length} leads simultaneamente?`)) return;
     
     let sucessos = 0;
-    for (const l of paraEnviar) {
-      setAviso(`Enviando para ${l.nome}... (${sucessos}/${paraEnviar.length})`);
-      setOcupado(l.id + ":auto");
-      const res = await fetch("/api/enviar-automatico", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
-      });
-      const json = await res.json();
-      setOcupado(null);
-      if (res.ok) {
-        setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
-        await atualizar(l.id, { status: "enviado", canal: "email" });
-        sucessos++;
-      } else {
-        setAviso(`Falha ao enviar para ${l.nome}: ${json.erro}`);
-        await new Promise(r => setTimeout(r, 2000));
-      }
-      await new Promise(r => setTimeout(r, 1000)); // anti-spam delay
+    const batchSize = 10;
+
+    for (let i = 0; i < paraEnviar.length; i += batchSize) {
+      const lote = paraEnviar.slice(i, i + batchSize);
+      setAviso(`Enviando lote ultrarrápido... (${Math.min(i + batchSize, paraEnviar.length)}/${paraEnviar.length})`);
+      
+      await Promise.all(lote.map(async (l) => {
+        setOcupado(l.id + ":auto");
+        try {
+          const res = await fetch("/api/enviar-automatico", {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
+          });
+          const json = await res.json();
+          if (res.ok) {
+            setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
+            await atualizar(l.id, { status: "enviado", canal: "email" });
+            sucessos++;
+          }
+        } catch (err) {
+          console.error(err);
+        }
+        setOcupado(null);
+      }));
     }
-    setAviso(`Disparo concluído: ${sucessos} e-mails enviados.`);
+    
+    setOcupado(null);
+    setAviso(`Disparo turbo finalizado! ${sucessos} e-mails enviados.`);
   }
 
   async function gerarDMsEmLote() {
     const paraGerar = visiveis.filter(l => l.instagram && l.status === "novo");
     if (paraGerar.length === 0) return setAviso("Nenhum lead novo com Instagram disponível para gerar mensagens.");
-    if (!confirm(`Deseja gerar mensagens persuasivas via IA para ${paraGerar.length} leads do Instagram?`)) return;
+    if (!confirm(`Deseja gerar mensagens persuasivas via IA para ${paraGerar.length} leads do Instagram simultaneamente?`)) return;
     
     let sucessos = 0;
-    for (const l of paraGerar) {
-      setAviso(`Gerando DM para ${l.nome}... (${sucessos}/${paraGerar.length})`);
-      setOcupado(l.id + ":gerar");
-      const res = await fetch("/api/gerar-mensagem", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
-      });
-      const json = await res.json();
-      setOcupado(null);
-      if (res.ok) {
-        setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
-        await atualizar(l.id, { status: "mensagem_gerada" });
-        sucessos++;
-      } else {
-        setAviso(`Falha ao gerar para ${l.nome}: ${json.erro}`);
-      }
+    const batchSize = 10;
+    
+    for (let i = 0; i < paraGerar.length; i += batchSize) {
+      const lote = paraGerar.slice(i, i + batchSize);
+      setAviso(`Gerando mensagens com IA... (${Math.min(i + batchSize, paraGerar.length)}/${paraGerar.length})`);
+      
+      await Promise.all(lote.map(async (l) => {
+        setOcupado(l.id + ":gerar");
+        try {
+          const res = await fetch("/api/gerar-mensagem", {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId: l.id }),
+          });
+          const json = await res.json();
+          if (res.ok) {
+            setMsgAberta((m) => ({ ...m, [l.id]: json.texto }));
+            await atualizar(l.id, { status: "mensagem_gerada" });
+            sucessos++;
+          }
+        } catch (err) {
+          console.error(err);
+        }
+        setOcupado(null);
+      }));
     }
-    setAviso(`Concluído! ${sucessos} DMs geradas prontas para envio.`);
+    
+    setOcupado(null);
+    setAviso(`Processamento turbo concluído! ${sucessos} DMs geradas e prontas para envio.`);
   }
 
   async function limparTodos() {
