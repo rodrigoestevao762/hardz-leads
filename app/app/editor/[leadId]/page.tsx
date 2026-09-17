@@ -215,7 +215,7 @@ export default function EditorLanding() {
   if (estado === "carregando") {
     return (
       <p className="mono py-16 text-center text-xs uppercase tracking-widest text-[var(--ink-faint)]">
-        <span className="pulse-dot mr-2 inline-block align-middle" /> carregando editor...
+        <span className="pulse-dot mr-2 inline-block align-middle" /> inicializando motor de edição...
       </p>
     );
   }
@@ -229,7 +229,7 @@ export default function EditorLanding() {
           ainda não tem uma landing gerada
         </p>
         <button onClick={gerar} disabled={ocupado === "gerar"}
-          className="btn-signal mono mt-7 rounded-xl px-6 py-3 text-[11px] uppercase tracking-widest disabled:opacity-50">
+          className="btn-3d btn-3d-primary mt-7 py-3 px-6 text-[11px] disabled:opacity-50">
           {ocupado === "gerar" ? "gerando com IA..." : "✦ gerar com IA"}
         </button>
         {aviso && <p className="mono mt-4 text-xs text-[var(--alert)]">{aviso}</p>}
@@ -241,41 +241,41 @@ export default function EditorLanding() {
   }
 
   return (
-    <div>
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Barra de ferramentas */}
-      <div className="panel mb-4 flex flex-wrap items-center gap-3 rounded-2xl p-3">
+      <div className="panel mb-4 flex flex-wrap items-center gap-3 rounded-2xl p-3 bg-black/40 backdrop-blur-md border border-white/5">
         <div className="mr-2">
-          <p className="eyebrow">Editor de landing</p>
+          <p className="eyebrow">Editor neural</p>
           <h1 className="text-sm font-semibold">{lead.nome}</h1>
         </div>
 
-        <label className="mono flex items-center gap-2 text-[10px] uppercase tracking-widest text-[var(--ink-dim)]">
+        <label className="mono flex items-center gap-2 text-[10px] uppercase tracking-widest text-[var(--ink-dim)] bg-white/5 rounded-lg px-2 py-1">
           Cor
           <input type="color" value={accent} onChange={(e) => trocarCor(e.target.value)}
-            className="h-8 w-10 cursor-pointer rounded border border-[var(--line)] bg-transparent" />
+            className="h-6 w-8 cursor-pointer rounded border border-[var(--line)] bg-transparent" />
         </label>
 
         <select value={tema} onChange={(e) => trocarTema(e.target.value as "escuro" | "claro")}
-          className="field mono rounded-lg px-2.5 py-1.5 text-xs">
+          className="field-premium mono rounded-lg px-2.5 py-1.5 text-[10px] outline-none">
           <option value="escuro">Tema escuro</option>
           <option value="claro">Tema claro</option>
         </select>
 
-        <span className="mono hidden text-[10px] uppercase tracking-widest text-[var(--ink-faint)] lg:inline">
-          ▸ clique em qualquer texto no preview para editar
+        <span className="mono hidden text-[10px] uppercase tracking-widest text-[var(--ink-faint)] lg:inline ml-2">
+          ▸ clique no texto do preview para reescrever
         </span>
 
-        <div className="ml-auto flex flex-wrap gap-2">
+        <div className="ml-auto flex flex-wrap gap-2 items-center">
           <button onClick={gerar} disabled={!!ocupado}
-            className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest disabled:opacity-50">
-            {ocupado === "gerar" ? "gerando..." : "↻ regerar com IA"}
+            className="btn-3d btn-3d-ghost py-1.5 px-3 text-[9px] disabled:opacity-50">
+            {ocupado === "gerar" ? "gerando..." : "↻ regerar"}
           </button>
           <button onClick={baixar}
-            className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest">
-            ↓ baixar html
+            className="btn-3d btn-3d-ghost py-1.5 px-3 text-[9px]">
+            ↓ baixar
           </button>
           <button onClick={salvar} disabled={!!ocupado}
-            className="btn-signal mono rounded-lg px-4 py-2 text-[10px] uppercase tracking-widest disabled:opacity-50">
+            className="btn-3d btn-3d-primary py-1.5 px-4 text-[9px] disabled:opacity-50">
             {ocupado === "salvar" ? "salvando..." : salvo ? "✓ salvo" : "salvar"}
           </button>
         </div>
@@ -288,59 +288,51 @@ export default function EditorLanding() {
       )}
 
       {/* Preview */}
-      <div className="overflow-hidden rounded-2xl border border-[var(--line)]">
+      <div className="overflow-hidden rounded-2xl border border-[var(--signal)]/30 shadow-[0_0_30px_rgba(45,255,180,0.05)] bg-[#030603]">
         <iframe ref={iframeRef} srcDoc={srcDoc} title="Pré-visualização da landing"
           sandbox="allow-same-origin"
-          className="h-[78vh] w-full bg-white" />
+          className="h-[75vh] w-full bg-white transition-opacity duration-300" />
       </div>
       <p className="mono mt-3 text-center text-[10px] uppercase tracking-widest text-[var(--ink-faint)]">
-        as alterações no texto são aplicadas na hora — clique em salvar para guardar
+        as alterações no texto são aplicadas em real-time — grave no banco clicando em salvar
       </p>
 
       {/* Publicação */}
-      <div className="panel mt-4 rounded-2xl p-5">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="panel mt-8 mb-8 rounded-2xl p-6 text-center">
+        <p className="eyebrow text-center mb-4">Hospedagem de Infiltração</p>
+        
+        {!publicaUrl ? (
           <div>
-            <p className="eyebrow">Hospedagem grátis</p>
-            <h2 className="text-sm font-semibold">Publicar este site na internet</h2>
-          </div>
-          <div className="ml-auto flex flex-wrap gap-2">
-            {publicaUrl ? (
-              <button onClick={despublicar} disabled={!!ocupado}
-                className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest disabled:opacity-50">
-                {ocupado === "despublicar" ? "..." : "despublicar"}
-              </button>
-            ) : (
-              <button onClick={publicar} disabled={!!ocupado}
-                className="btn-signal mono rounded-lg px-4 py-2 text-[10px] uppercase tracking-widest disabled:opacity-50">
-                {ocupado === "publicar" ? "publicando..." : "↑ publicar site grátis"}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {publicaUrl && (
-          <div className="mt-4 rounded-xl border border-[var(--signal)]/30 bg-[var(--signal)]/5 p-4">
-            <p className="mono text-[10px] uppercase tracking-widest text-[var(--ink-dim)]">
-              ✓ site no ar — link para enviar ao cliente
+            <p className="mono mb-5 text-[11px] uppercase tracking-widest text-[var(--ink-dim)]">
+              Coloque essa landing no ar para enviar no e-mail ou direct.
             </p>
-            <div className="mt-2 flex flex-wrap items-center gap-2">
-              <a href={publicaUrl} target="_blank" rel="noopener"
-                className="mono break-all text-xs text-[var(--signal)] underline underline-offset-4">
+            <button onClick={publicar} disabled={ocupado === "publicar" || ocupado === "salvar"}
+              className="btn-3d btn-3d-amber py-3 px-8 text-[11px] disabled:opacity-50 shadow-[0_0_20px_rgba(255,176,32,0.3)]">
+              {ocupado === "publicar" ? "compilando build..." : "✦ PUBLICAR ONLINE"}
+            </button>
+          </div>
+        ) : (
+          <div>
+            <p className="mono mb-3 text-[11px] uppercase tracking-widest text-[var(--signal)]">
+              ✓ Landing online e pronta para interceptação
+            </p>
+            <div className="mx-auto flex max-w-sm flex-col gap-3 sm:flex-row">
+              <a href={publicaUrl} target="_blank" rel="noreferrer"
+                className="field-premium mono flex-1 truncate rounded-lg px-4 py-2.5 text-left text-xs text-white hover:text-[var(--signal)]">
                 {publicaUrl}
               </a>
-              <button onClick={copiar}
-                className="btn-ghost mono shrink-0 rounded-lg px-3 py-1.5 text-[10px] uppercase tracking-widest">
-                {copiado ? "✓ copiado" : "copiar link"}
+              <button onClick={copiar} className="btn-3d btn-3d-primary py-2 px-4 text-[10px]">
+                {copiado ? "copiado" : "copiar"}
               </button>
             </div>
-            <p className="mono mt-3 text-[10px] uppercase tracking-widest text-[var(--ink-faint)]">
-              toda alteração salva no editor aparece no site na hora
-            </p>
+            <button onClick={despublicar} disabled={ocupado === "despublicar"}
+              className="btn-3d btn-3d-ghost mt-6 py-2 px-6 text-[10px] disabled:opacity-50">
+              {ocupado === "despublicar" ? "desativando..." : "derrubar página"}
+            </button>
           </div>
         )}
 
-        <div className="mt-5 border-t border-[var(--line)] pt-5">
+        <div className="mt-8 border-t border-white/5 pt-6 text-left">
           <p className="eyebrow">Domínio próprio</p>
           <p className="mt-2 text-xs leading-relaxed text-[var(--ink-dim)]">
             Quer um endereço tipo <span className="mono text-[var(--signal)]">barbearia-do-joao.com</span>?
@@ -348,18 +340,14 @@ export default function EditorLanding() {
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <a href="https://www.hostinger.com.br/registro-de-dominios" target="_blank" rel="noopener"
-              className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest">Hostinger</a>
+              className="btn-3d btn-3d-ghost py-1.5 px-3 text-[9px] uppercase tracking-widest">Hostinger</a>
             <a href="https://www.namecheap.com/domains/" target="_blank" rel="noopener"
-              className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest">Namecheap</a>
+              className="btn-3d btn-3d-ghost py-1.5 px-3 text-[9px] uppercase tracking-widest">Namecheap</a>
             <a href="https://www.godaddy.com/pt-br/registro-de-dominio" target="_blank" rel="noopener"
-              className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest">GoDaddy</a>
+              className="btn-3d btn-3d-ghost py-1.5 px-3 text-[9px] uppercase tracking-widest">GoDaddy</a>
             <a href="https://registro.br/" target="_blank" rel="noopener"
-              className="btn-ghost mono rounded-lg px-3.5 py-2 text-[10px] uppercase tracking-widest">Registro.br (.br)</a>
+              className="btn-3d btn-3d-ghost py-1.5 px-3 text-[9px] uppercase tracking-widest">Registro.br (.br)</a>
           </div>
-          <p className="mono mt-4 text-[10px] leading-relaxed tracking-wide text-[var(--ink-faint)]">
-            depois de comprar: no painel DNS do vendedor, crie A @ 76.76.21.21 e CNAME www → cname.vercel-dns.com,
-            depois adicione o domínio em vercel.com → projeto prospectandoai → settings → domains
-          </p>
         </div>
       </div>
     </div>
