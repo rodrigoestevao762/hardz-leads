@@ -107,15 +107,25 @@ async function searchEcosia(query: string): Promise<string> {
 export async function enrichLeadData(nome: string, cidade: string, uf: string = '') {
   const queryPadrao = `"${nome}" ${cidade} ${uf}`.trim();
   
-  // Dispara buscas paralelas em 7 motores diferentes para precisão ultra
+  // Dispara buscas paralelas em 7 motores diferentes usando Advanced Google Dorks (Hacking OSINT)
+  const safeNome = nome.replace(/"/g, ''); // evita quebra de aspas
+  const urlNome = safeNome.replace(/\s+/g, '').toLowerCase();
+
   const [htmlYahoo, htmlBing, htmlDuck, htmlQwant, htmlBrave, htmlAsk, htmlEcosia] = await Promise.all([
-    searchYahoo(`${queryPadrao} contato email`),
-    searchBing(`${queryPadrao} "@gmail.com" OR "@hotmail.com"`),
-    searchDuckDuckGo(`${queryPadrao} site:instagram.com`),
-    searchQwant(`${nome} ${cidade} instagram oficial`),
-    searchBrave(`${nome} ${cidade} email contato`),
-    searchAsk(`"${nome}" ${cidade} instagram OR email`),
-    searchEcosia(`${nome} ${cidade} contato email instagram`)
+    // Yahoo: Dork intitle e inurl para achar páginas de contato específicas
+    searchYahoo(`intitle:"${safeNome}" (inurl:contato OR inurl:sobre) ${cidade} ${uf}`),
+    // Bing: Dork intext com operadores lógicos para caçar provedores de email públicos
+    searchBing(`"${safeNome}" ${cidade} ("@gmail.com" OR "@hotmail.com" OR "@yahoo.com" OR "@outlook.com")`),
+    // DuckDuckGo: Dork agressiva focada puramente em Instagram (site: e inurl:)
+    searchDuckDuckGo(`site:instagram.com inurl:${urlNome} OR intitle:"${safeNome}" ${cidade}`),
+    // Qwant: Dork focada em Facebook
+    searchQwant(`site:facebook.com intitle:"${safeNome}" ${cidade}`),
+    // Brave: Dork focando em vazamento de planilhas/PDFs com cadastros
+    searchBrave(`"${safeNome}" ${cidade} (filetype:pdf OR filetype:xls OR filetype:csv) "email"`),
+    // Ask: Dork híbrida intitle
+    searchAsk(`intitle:"${safeNome}" ${cidade} (instagram OR facebook OR email)`),
+    // Ecosia: Dork inurl e busca de contatos
+    searchEcosia(`"${safeNome}" ${cidade} inurl:contato OR inurl:contact`)
   ]);
   
   const htmlUnificado = htmlYahoo + " " + htmlBing + " " + htmlDuck + " " + htmlQwant + " " + htmlBrave + " " + htmlAsk + " " + htmlEcosia;
