@@ -37,7 +37,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-1 px-4 py-2.5">
           {/* Logo */}
-          <Link href="/app" className="flex items-center gap-3 shrink-0 group">
+          <Link href="/" className="flex items-center gap-3 shrink-0 group">
             <SpinningSatellite className="w-8 h-8" />
             <span className="headline text-[11px] font-bold uppercase tracking-[0.15em] hidden sm:block">
               PROSPECT<span className="text-signal-glow">AI</span>

@@ -60,27 +60,41 @@ function extractSocialLinks(html: string) {
   // o que causava a captura de buscas inteiras tipo '22+roma+@gmail.com'
   const emailMatches = htmlLimpo.match(/[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
   
-  // Filtra e-mails sujos (falsos positivos dos motores ou imagens)
   const dominiosBloqueados = [
     "duckduckgo", "sentry", "example", "w3.org", "sijax", "bing.com", "yahoo.com",
     "google.com", "microsoft.com", "facebook.com", "instagram.com", "twitter.com",
     "apple.com", "cloudflare.com", "ifood.com", "tripadvisor.com", "tiktok.com",
-    "linkedin.com", "amazon.com", "qwant.com"
+    "linkedin.com", "amazon.com", "qwant.com", "email.com", "teste.com", "test.com",
+    "site.com", "suaempresa.com", "dominio.com", "domain.com", "yourdomain.com"
   ];
-  const extensoesInvalidas = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".css", ".js"];
+  const extensoesInvalidas = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".css", ".js", ".ttf", ".woff"];
+  const usernamesBloqueadosEmail = [
+    "seuemail", "seunome", "email", "teste", "test", "noreply", "no-reply", "naoresponda", 
+    "donotreply", "1234", "admin@site", "contato@site", "contato@suaempresa", "nome@site"
+  ];
   
   const emailValido = emailMatches.find(e => {
     const l = e.toLowerCase();
+    const parts = l.split('@');
+    if (parts.length !== 2) return false;
+    const userPart = parts[0];
+    const domainPart = parts[1];
+
     // Rejeita se for arquivo de imagem ou script
     if (extensoesInvalidas.some(ext => l.endsWith(ext))) return false;
-    // Rejeita domínios de motores ou corporações grandes
-    if (dominiosBloqueados.some(d => l.includes(d))) return false;
-    // Evita emails absurdamente grandes (falsos matches)
-    if (l.length > 40) return false;
+    // Rejeita domínios de motores ou corporações grandes ou falsos
+    if (dominiosBloqueados.some(d => domainPart.includes(d))) return false;
+    // Evita emails absurdamente grandes ou muito pequenos
+    if (l.length > 40 || l.length < 5) return false;
     // Rejeita emails falsos gerados por dorks url-encoded
-    if (l.includes('+or+') || l.includes('22@')) return false;
+    if (l.includes('+or+') || userPart === '22') return false;
     // Rejeita se começar com caracteres estranhos
     if (l.startsWith('-') || l.startsWith('.')) return false;
+    // Rejeita usernames comuns de placeholders ou no-reply
+    if (usernamesBloqueadosEmail.some(u => userPart.includes(u))) return false;
+    // Checa se o domínio parece real (tem pelo menos um ponto e tamanho razoável)
+    if (!domainPart.includes('.') || domainPart.split('.').some(p => p.length === 0)) return false;
+
     return true;
   });
 
@@ -147,6 +161,37 @@ export async function enrichLeadData(nome: string, cidade: string, uf: string = 
 
 import { geocodificar, buscarEmpresas } from './overpass';
 
+function getTagsForNiche(nicho: string): string[] {
+  const n = nicho.toLowerCase();
+  let tags: string[] = [];
+  
+  if (n.includes("restaurante") || n.includes("comida") || n.includes("food") || n.includes("lanchonete") || n.includes("pizza") || n.includes("hamburguer")) {
+    tags.push("amenity~restaurant|fast_food|cafe|bar|food_court", "shop~bakery|pastry");
+  } else if (n.includes("barbearia") || n.includes("cabelo") || n.includes("salão") || n.includes("salao")) {
+    tags.push("shop~hairdresser|beauty|tattoo", "amenity~barbershop");
+  } else if (n.includes("estética") || n.includes("estetica") || n.includes("spa")) {
+    tags.push("shop~beauty|massage|spa", "leisure~spa");
+  } else if (n.includes("advogado") || n.includes("direito") || n.includes("law")) {
+    tags.push("office~lawyer|notary");
+  } else if (n.includes("clínica") || n.includes("clinica") || n.includes("médico") || n.includes("medico") || n.includes("saúde") || n.includes("odonto") || n.includes("dentista")) {
+    tags.push("amenity~clinic|doctors|dentist|hospital");
+  } else if (n.includes("loja") || n.includes("roupa") || n.includes("varejo") || n.includes("store")) {
+    tags.push("shop~clothes|boutique|shoes|department_store|supermarket|convenience|electronics|hardware");
+  } else if (n.includes("academia") || n.includes("gym") || n.includes("fitness") || n.includes("crossfit")) {
+    tags.push("leisure~fitness_centre|sports_centre", "club~sport");
+  } else if (n.includes("pet") || n.includes("veterinári")) {
+    tags.push("shop~pet", "amenity~veterinary");
+  } else if (n.includes("imobiliária") || n.includes("imobiliaria") || n.includes("corretor")) {
+    tags.push("office~estate_agent");
+  } else if (n.includes("carro") || n.includes("auto") || n.includes("veículo") || n.includes("oficina") || n.includes("mecânica")) {
+    tags.push("shop~car|car_repair|car_parts", "amenity~car_wash");
+  }
+
+  // Adiciona a busca pelo nome como alternativa
+  tags.push(`name~${nicho.split(' ')[0]}`);
+  return tags;
+}
+
 export async function radarInstagram(nicho: string, cidade: string) {
   const cid = (cidade.toLowerCase() === "mundial" || cidade.trim() === "") ? "" : cidade.trim();
   const nic = nicho.trim() || "empresa";
@@ -157,33 +202,42 @@ export async function radarInstagram(nicho: string, cidade: string) {
                       nic.toLowerCase().includes("loja") ? `${nic} store` : 
                       nic.toLowerCase().includes("estética") ? `${nic} spa` : nic;
 
-  // Usa Geocodificação + Overpass (Extremamente rápido e varre milhares de comércios)
-  const geo = await geocodificar(cid);
-  if (geo) {
+  let geo = null;
+  if (cid) {
+    geo = await geocodificar(cid);
+  }
+
+  const tags = getTagsForNiche(nic);
+
+  try {
     const emp = await buscarEmpresas(
       "all",
-      [`name~${nicExpanded.split(' ')[0]}`], // Busca qualquer coisa relacionada ao nicho
-      geo.lat,
-      geo.lng,
-      geo.radiusM,
-      cid,
-      geo.paisNome
+      tags,
+      geo ? geo.lat : 0,
+      geo ? geo.lng : 0,
+      geo ? geo.radiusM : 0,
+      cid || "Global",
+      geo ? geo.paisNome : ""
     );
-    // Para manter a assinatura, convertemos para o formato do radar
-    return emp.map(e => ({
-      osmId: e.osmId,
-      nome: e.nome,
-      categoria: nicho || "Instagram",
-      cidade: cidade || "Global",
-      pais: e.pais || "",
-      telefone: e.telefone || null,
-      website: e.website || null,
-      email: e.email || null,
-      instagram: e.instagram || null,
-      fonte: "overpass",
-      score: 50,
-      nivel: "morno"
-    }));
+    
+    if (emp.length > 0) {
+      return emp.map(e => ({
+        osmId: e.osmId,
+        nome: e.nome,
+        categoria: nicho || "Instagram",
+        cidade: e.cidade || cidade || "Global",
+        pais: e.pais || "",
+        telefone: e.telefone || null,
+        website: e.website || null,
+        email: e.email || null,
+        instagram: e.instagram || null,
+        fonte: "overpass",
+        score: 50,
+        nivel: "morno"
+      }));
+    }
+  } catch (error) {
+    console.error("Overpass falhou no radarInstagram:", error);
   }
 
   // Fallback para OSINT se a cidade não for encontrada
@@ -254,33 +308,40 @@ export async function radarFoods(nicho: string, cidade: string) {
                       nic.toLowerCase().includes("hamburgueria") ? `${nic} burger` : 
                       nic.toLowerCase().includes("pizzaria") ? `${nic} pizzeria` : nic;
 
-  // Busca Massiva via Overpass API primeiro (Milhares de restaurantes globais)
-  const geo = await geocodificar(cid);
-  if (geo) {
+  let geo = null;
+  if (cid) {
+    geo = await geocodificar(cid);
+  }
+
+  try {
     const emp = await buscarEmpresas(
       "food",
       ["amenity~restaurant|fast_food|cafe|bar", "shop~bakery|pastry", `name~${nicExpanded.split(' ')[0]}`], 
-      geo.lat,
-      geo.lng,
-      geo.radiusM,
-      cid,
-      geo.paisNome
+      geo ? geo.lat : 0,
+      geo ? geo.lng : 0,
+      geo ? geo.radiusM : 0,
+      cid || "Global",
+      geo ? geo.paisNome : ""
     );
-    // Transforma a saída do mapa na saída de leads (mesmo que não tenha iFood ainda, o usuário enriquece)
-    return emp.map(e => ({
-      osmId: e.osmId,
-      nome: e.nome,
-      categoria: "Restaurante/Delivery",
-      cidade: e.cidade || cidade,
-      pais: e.pais || "",
-      telefone: e.telefone || null,
-      website: e.website || null,
-      email: e.email || null,
-      instagram: e.instagram || null,
-      fonte: "overpass_foods",
-      score: 70,
-      nivel: "quente"
-    }));
+    
+    if (emp.length > 0) {
+      return emp.map(e => ({
+        osmId: e.osmId,
+        nome: e.nome,
+        categoria: "Restaurante/Delivery",
+        cidade: e.cidade || cidade || "Global",
+        pais: e.pais || "",
+        telefone: e.telefone || null,
+        website: e.website || null,
+        email: e.email || null,
+        instagram: e.instagram || null,
+        fonte: "overpass_foods",
+        score: 70,
+        nivel: "quente" as const
+      }));
+    }
+  } catch (error) {
+    console.error("Overpass falhou no radarFoods:", error);
   }
 
   // Fallback para OSINT se falhar

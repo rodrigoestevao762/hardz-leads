@@ -17,3 +17,4 @@ export default function SpinningSatellite({ className = "w-10 h-10" }: { classNa
     </div>
   );
 }
+

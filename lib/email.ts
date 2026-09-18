@@ -14,6 +14,39 @@ export async function enviarEmailDoLead(
 ): Promise<{ ok: true } | { ok: false; erro: string; status: number }> {
   if (!lead.email) return { ok: false, erro: "lead sem e-mail", status: 400 };
 
+  const l = lead.email.toLowerCase().trim();
+  const parts = l.split('@');
+  if (parts.length !== 2) return { ok: false, erro: "e-mail em formato inválido", status: 400 };
+  const userPart = parts[0];
+  const domainPart = parts[1];
+
+  const extensoesInvalidas = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".css", ".js", ".ttf", ".woff"];
+  const dominiosBloqueados = [
+    "duckduckgo", "sentry", "example", "w3.org", "sijax", "bing.com", "yahoo.com",
+    "google.com", "microsoft.com", "facebook.com", "instagram.com", "twitter.com",
+    "apple.com", "cloudflare.com", "ifood.com", "tripadvisor.com", "tiktok.com",
+    "linkedin.com", "amazon.com", "qwant.com", "email.com", "teste.com", "test.com",
+    "site.com", "suaempresa.com", "dominio.com", "domain.com", "yourdomain.com", "wixsite.com"
+  ];
+  const usernamesBloqueados = [
+    "seuemail", "seunome", "email", "teste", "test", "noreply", "no-reply", "naoresponda", 
+    "donotreply", "1234", "admin@site", "contato@site", "contato@suaempresa", "nome@site"
+  ];
+
+  if (
+    extensoesInvalidas.some(ext => l.endsWith(ext)) ||
+    dominiosBloqueados.some(d => domainPart.includes(d)) ||
+    l.length > 50 || l.length < 5 ||
+    l.includes('+or+') || userPart === '22' ||
+    l.startsWith('-') || l.startsWith('.') ||
+    usernamesBloqueados.some(u => userPart === u || userPart.includes(u)) ||
+    !domainPart.includes('.') || domainPart.split('.').some(p => p.length === 0)
+  ) {
+    // Retornamos ok: true mas marcamos como erro no status, ou ok: false. 
+    // Se retornarmos erro aqui, não gastamos a cota e avisamos a UI.
+    return { ok: false, erro: "E-mail bloqueado por conter formato inválido ou ser reconhecido como falso (Anti-Bounce)", status: 400 };
+  }
+
   const { data: settings } = await sb.from("settings").select("*").eq("user_id", user.id).single();
   const gmailPassword = settings?.resend_api_key || process.env.GMAIL_APP_PASSWORD; // Usando a mesma coluna no banco
   const gmailEmail = settings?.remetente_email || process.env.GMAIL_EMAIL;

@@ -61,7 +61,7 @@ export async function buscarEmpresas(
   pais: string,
   classificar?: (t: Record<string, string>) => string
 ): Promise<EmpresaOSM[]> {
-  const around = `(around:${radiusM},${lat},${lng})`;
+  const around = radiusM > 0 ? `(around:${radiusM},${lat},${lng})` : "";
   const selectors = tags.map((t) => {
     if (t.includes("~")) {
       const [k, v] = t.split("~");
@@ -70,8 +70,8 @@ export async function buscarEmpresas(
     const [k, v] = t.split("=");
     return `nwr["${k}"="${esc(v)}"]${around};`;
   });
-  // Limite massivo de 3000 resultados para velocidade e volume de extração extremo
-  const query = `[out:json][timeout:40];(${selectors.join("")});out center 3000;`;
+  // Limite massivo de 15000 resultados para velocidade e volume de extração extremo
+  const query = `[out:json][timeout:60];(${selectors.join("")});out center 15000;`;
 
   const UA = { "User-Agent": "ProspectandoAI/1.0 (prospeccao de empresas)" };
 
