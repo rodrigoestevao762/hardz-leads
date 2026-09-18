@@ -125,6 +125,22 @@ export default function EditorLanding() {
     return () => iframe.removeEventListener("load", aoCarregar);
   }, [srcDoc]);
 
+  async function aprimorar() {
+    const instrucao = window.prompt("O que você gostaria de aprimorar na página? (Ex: adicione uma foto de café, deixe o texto mais descontraído, foque em eventos empresariais, etc)");
+    if (!instrucao) return;
+    setOcupado("gerar"); setAviso(null);
+    const res = await fetch("/api/gerar-landing", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId, instrucaoCustomizada: instrucao }),
+    });
+    const json = await res.json();
+    setOcupado(null);
+    if (!res.ok) return setAviso("Erro: " + json.erro);
+    const t = json.textos as TextosLanding;
+    setTextos(t);
+    if (dados) reconstruir(t, accent, tema, dados);
+    setEstado("pronto");
+  }
+
   async function gerar() {
     setOcupado("gerar"); setAviso(null);
     const res = await fetch("/api/gerar-landing", {
@@ -266,6 +282,11 @@ export default function EditorLanding() {
         </span>
 
         <div className="ml-auto flex flex-wrap gap-2 items-center">
+          <button onClick={aprimorar} disabled={!!ocupado}
+            className="btn-3d btn-3d-secondary py-1.5 px-3 text-[9px] disabled:opacity-50"
+            style={{ color: "var(--signal)" }}>
+            ✦ aprimorar
+          </button>
           <button onClick={gerar} disabled={!!ocupado}
             className="btn-3d btn-3d-ghost py-1.5 px-3 text-[9px] disabled:opacity-50">
             {ocupado === "gerar" ? "gerando..." : "↻ regerar"}

@@ -4,12 +4,12 @@ import { buildLandingHTML, textosPadrao, type TextosLanding } from "@/lib/landin
 import { idiomaDoPais } from "@/lib/mensagens";
 import { CATEGORIAS } from "@/lib/categorias";
 
-const MODELO = "gemini-3.6-flash";
+const MODELO = "gemini-1.5-flash";
 
 export async function POST(req: Request) {
   try {
     const { sb, user } = await usuarioObrigatorio();
-    const { leadId } = await req.json();
+    const { leadId, instrucaoCustomizada } = await req.json();
     if (!leadId) return NextResponse.json({ erro: "leadId obrigatório" }, { status: 400 });
 
     const { data: lead } = await sb
@@ -31,23 +31,28 @@ export async function POST(req: Request) {
 
     if (apiKey) {
       const idioma = idiomaDoPais(lead.pais || "", lead.cidade || "");
-      const prompt = `Você escreve textos de landing page para pequenos negócios. Gere conteúdo para a landing page do negócio abaixo, ESCREVENDO TUDO EM ${idioma.toUpperCase()}.
+      const prompt = `Você escreve textos e estrutura páginas web para pequenos negócios. Gere conteúdo para a landing page do negócio abaixo, ESCREVENDO TUDO EM ${idioma.toUpperCase()}.
 
 Negócio: ${lead.nome}
 Tipo: ${dados.categoriaLabel}
 Cidade: ${lead.cidade}${lead.pais ? `, ${lead.pais}` : ""}
 
-Devolva SOMENTE um JSON válido com estas chaves:
+${instrucaoCustomizada ? `ATENÇÃO - INSTRUÇÃO DO USUÁRIO (APRIMORAMENTO):
+O usuário solicitou uma mudança na página com a seguinte instrução:
+"${instrucaoCustomizada}"
+Você DEVE adaptar os textos ou inserir links de imagens (usando tags <img src="..." style="border-radius:12px; margin-top:20px; width:100%"> no meio do texto, por exemplo no 'sub' ou 'expTexto') se o usuário pedir uma foto e você tiver acesso a um link, ou simplesmente melhorar o texto conforme o pedido.` : ""}
+
+Devolva SOMENTE um JSON válido com estas chaves (pode usar HTML básico dentro dos valores se o usuário pediu imagens ou negrito):
 {
   "eyebrow": "etiqueta curta do topo (tipo + cidade, ex: BARBEARIA · LISBOA)",
   "h1a": "primeira parte do título principal (3-5 palavras, tom aspiracional)",
   "h1b": "segunda parte do título (2-3 palavras, a frase de impacto)",
-  "sub": "parágrafo de apresentação (2 frases)",
+  "sub": "parágrafo de apresentação (2 frases). Pode incluir <img> se pedido.",
   "servTitulo1": "palavra antes do destaque, ex: Nossos",
   "servTitulo2": "palavra em destaque, ex: serviços",
   "expTitulo1": "título da seção experiência, parte 1",
   "expTitulo2": "parte em destaque do título",
-  "expTexto": "parágrafo sobre a experiência do cliente (2 frases)",
+  "expTexto": "parágrafo sobre a experiência do cliente (2 frases). Pode incluir <img> se pedido.",
   "ctaEyebrow": "etiqueta da seção final (convite à ação, curto)",
   "ctaLinha1": "linha 1 do título final",
   "ctaLinha2": "linha 2 em destaque",
@@ -64,7 +69,7 @@ Devolva SOMENTE um JSON válido com estas chaves:
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json", temperature: 0.8 },
+            generationConfig: { responseMimeType: "application/json", temperature: instrucaoCustomizada ? 0.9 : 0.8 },
           }),
           signal: AbortSignal.timeout(45_000),
         }

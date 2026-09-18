@@ -192,8 +192,20 @@ function getTagsForNiche(nicho: string): string[] {
   return tags;
 }
 
+const CIDADES_GLOBAIS = [
+  "São Paulo", "New York", "London", "Paris", "Tokyo", "Los Angeles", 
+  "Rio de Janeiro", "Madrid", "Lisbon", "Miami", "Berlin", "Rome",
+  "Sydney", "Toronto", "Mexico City", "Buenos Aires", "Dubai"
+];
+
+function getRandomCities(num: number) {
+  const shuffled = [...CIDADES_GLOBAIS].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, num);
+}
+
 export async function radarInstagram(nicho: string, cidade: string) {
-  const cid = (cidade.toLowerCase() === "mundial" || cidade.trim() === "") ? "" : cidade.trim();
+  const isGlobal = (cidade.toLowerCase() === "mundial" || cidade.trim() === "");
+  const cid = isGlobal ? "" : cidade.trim();
   const nic = nicho.trim() || "empresa";
   
   const nicExpanded = nic.toLowerCase().includes("clínica") ? `${nic} clinic` : 
@@ -202,26 +214,31 @@ export async function radarInstagram(nicho: string, cidade: string) {
                       nic.toLowerCase().includes("loja") ? `${nic} store` : 
                       nic.toLowerCase().includes("estética") ? `${nic} spa` : nic;
 
-  let geo = null;
-  if (cid) {
-    geo = await geocodificar(cid);
-  }
-
   const tags = getTagsForNiche(nic);
 
+  let leadsOSM: any[] = [];
   try {
-    const emp = await buscarEmpresas(
-      "all",
-      tags,
-      geo ? geo.lat : 0,
-      geo ? geo.lng : 0,
-      geo ? geo.radiusM : 0,
-      cid || "Global",
-      geo ? geo.paisNome : ""
-    );
-    
-    if (emp.length > 0) {
-      return emp.map(e => ({
+    if (isGlobal) {
+      // Para buscas mundiais, Overpass global trava. Pegamos 3 cidades gigantes aleatórias.
+      const cidades = getRandomCities(3);
+      const promessas = cidades.map(async (c) => {
+        const geo = await geocodificar(c);
+        if (!geo) return [];
+        return buscarEmpresas("all", tags, geo.lat, geo.lng, geo.radiusM, c, geo.paisNome);
+      });
+      const resultados = await Promise.allSettled(promessas);
+      for (const r of resultados) {
+        if (r.status === "fulfilled") leadsOSM.push(...r.value);
+      }
+    } else {
+      const geo = await geocodificar(cid);
+      if (geo) {
+        leadsOSM = await buscarEmpresas("all", tags, geo.lat, geo.lng, geo.radiusM, cid, geo.paisNome);
+      }
+    }
+
+    if (leadsOSM.length > 0) {
+      return leadsOSM.map(e => ({
         osmId: e.osmId,
         nome: e.nome,
         categoria: nicho || "Instagram",
@@ -240,7 +257,7 @@ export async function radarInstagram(nicho: string, cidade: string) {
     console.error("Overpass falhou no radarInstagram:", error);
   }
 
-  // Fallback para OSINT se a cidade não for encontrada
+  // Fallback para OSINT se a cidade não for encontrada ou falhar
   const base = `${nicExpanded} ${cid}`.trim();
   const baseComAspas = `${nicExpanded} ${cid ? `"${cid}"` : ""}`.trim();
   
@@ -301,31 +318,38 @@ export async function radarInstagram(nicho: string, cidade: string) {
 }
 
 export async function radarFoods(nicho: string, cidade: string) {
-  const cid = (cidade.toLowerCase() === "mundial" || cidade.trim() === "") ? "" : cidade.trim();
+  const isGlobal = (cidade.toLowerCase() === "mundial" || cidade.trim() === "");
+  const cid = isGlobal ? "" : cidade.trim();
   const nic = nicho.trim() || "restaurante";
   
   const nicExpanded = nic.toLowerCase().includes("restaurante") ? `${nic} restaurant` : 
                       nic.toLowerCase().includes("hamburgueria") ? `${nic} burger` : 
                       nic.toLowerCase().includes("pizzaria") ? `${nic} pizzeria` : nic;
 
-  let geo = null;
-  if (cid) {
-    geo = await geocodificar(cid);
-  }
-
+  let leadsOSM: any[] = [];
   try {
-    const emp = await buscarEmpresas(
-      "food",
-      ["amenity~restaurant|fast_food|cafe|bar", "shop~bakery|pastry", `name~${nicExpanded.split(' ')[0]}`], 
-      geo ? geo.lat : 0,
-      geo ? geo.lng : 0,
-      geo ? geo.radiusM : 0,
-      cid || "Global",
-      geo ? geo.paisNome : ""
-    );
+    const tags = ["amenity~restaurant|fast_food|cafe|bar", "shop~bakery|pastry", `name~${nicExpanded.split(' ')[0]}`];
+
+    if (isGlobal) {
+      const cidades = getRandomCities(3);
+      const promessas = cidades.map(async (c) => {
+        const geo = await geocodificar(c);
+        if (!geo) return [];
+        return buscarEmpresas("food", tags, geo.lat, geo.lng, geo.radiusM, c, geo.paisNome);
+      });
+      const resultados = await Promise.allSettled(promessas);
+      for (const r of resultados) {
+        if (r.status === "fulfilled") leadsOSM.push(...r.value);
+      }
+    } else {
+      const geo = await geocodificar(cid);
+      if (geo) {
+        leadsOSM = await buscarEmpresas("food", tags, geo.lat, geo.lng, geo.radiusM, cid, geo.paisNome);
+      }
+    }
     
-    if (emp.length > 0) {
-      return emp.map(e => ({
+    if (leadsOSM.length > 0) {
+      return leadsOSM.map(e => ({
         osmId: e.osmId,
         nome: e.nome,
         categoria: "Restaurante/Delivery",
