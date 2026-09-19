@@ -9,7 +9,7 @@ const MODELO = "gemini-1.5-flash";
 export async function POST(req: Request) {
   try {
     const { sb, user } = await usuarioObrigatorio();
-    const { leadId, instrucaoCustomizada } = await req.json();
+    const { leadId, instrucaoCustomizada, modelo, indexar } = await req.json();
     if (!leadId) return NextResponse.json({ erro: "leadId obrigatório" }, { status: 400 });
 
     const { data: lead } = await sb
@@ -27,6 +27,20 @@ export async function POST(req: Request) {
       endereco: lead.endereco || null,
     };
 
+    // Tenta pegar a foto real via Outscraper
+    let fotoReal = "";
+    if (process.env.OUTSCRAPER_API_KEY && !instrucaoCustomizada) {
+      try {
+        const { buscarOutscraper } = await import("@/lib/outscraper");
+        const outRes = await buscarOutscraper(`"${lead.nome}" em ${lead.cidade}`, process.env.OUTSCRAPER_API_KEY);
+        if (outRes && outRes.length > 0 && outRes[0].foto) {
+          fotoReal = outRes[0].foto;
+        }
+      } catch (e) {
+        console.error("Erro ao buscar foto outscraper", e);
+      }
+    }
+
     let textos: TextosLanding = textosPadrao(dados);
 
     if (apiKey) {
@@ -40,19 +54,22 @@ Cidade: ${lead.cidade}${lead.pais ? `, ${lead.pais}` : ""}
 ${instrucaoCustomizada ? `ATENÇÃO - INSTRUÇÃO DO USUÁRIO (APRIMORAMENTO):
 O usuário solicitou uma mudança na página com a seguinte instrução:
 "${instrucaoCustomizada}"
-Você DEVE adaptar os textos ou inserir links de imagens (usando tags <img src="..." style="border-radius:12px; margin-top:20px; width:100%"> no meio do texto, por exemplo no 'sub' ou 'expTexto') se o usuário pedir uma foto e você tiver acesso a um link, ou simplesmente melhorar o texto conforme o pedido.` : ""}
+Você DEVE adaptar os textos ou inserir links de imagens (usando tags <img src="..." style="border-radius:12px; margin-top:20px; width:100%"> no meio do texto) se o usuário pedir uma foto e você tiver acesso a um link, ou simplesmente melhorar o texto conforme o pedido.` : ""}
+
+${fotoReal ? `FOTO REAL DO NEGÓCIO ENCONTRADA: ${fotoReal}
+IMPORTANTE: Você DEVE inserir essa foto no campo "sub" ou "expTexto" usando a tag: <img src="${fotoReal}" style="border-radius:12px; margin-top:20px; width:100%; max-height:400px; object-fit:cover;">` : ""}
 
 Devolva SOMENTE um JSON válido com estas chaves (pode usar HTML básico dentro dos valores se o usuário pediu imagens ou negrito):
 {
   "eyebrow": "etiqueta curta do topo (tipo + cidade, ex: BARBEARIA · LISBOA)",
   "h1a": "primeira parte do título principal (3-5 palavras, tom aspiracional)",
   "h1b": "segunda parte do título (2-3 palavras, a frase de impacto)",
-  "sub": "parágrafo de apresentação (2 frases). Pode incluir <img> se pedido.",
+  "sub": "parágrafo de apresentação (2 frases). Pode incluir <img> se pedido ou se fornecida.",
   "servTitulo1": "palavra antes do destaque, ex: Nossos",
   "servTitulo2": "palavra em destaque, ex: serviços",
   "expTitulo1": "título da seção experiência, parte 1",
   "expTitulo2": "parte em destaque do título",
-  "expTexto": "parágrafo sobre a experiência do cliente (2 frases). Pode incluir <img> se pedido.",
+  "expTexto": "parágrafo sobre a experiência do cliente (2 frases). Pode incluir <img> se pedido ou se fornecida.",
   "ctaEyebrow": "etiqueta da seção final (convite à ação, curto)",
   "ctaLinha1": "linha 1 do título final",
   "ctaLinha2": "linha 2 em destaque",
@@ -62,8 +79,9 @@ Devolva SOMENTE um JSON válido com estas chaves (pode usar HTML básico dentro 
   "bullets": [3 objetos {"titulo","desc"} — diferenciais]
 }`;
 
+      const modeloUsado = modelo || "gemini-1.5-flash";
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${MODELO}:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${modeloUsado}:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -85,6 +103,9 @@ Devolva SOMENTE um JSON válido com estas chaves (pode usar HTML básico dentro 
         } catch { /* usa fallback */ }
       }
     }
+
+    // injeta a preferência de indexação nos textos para ser renderizado no HTML
+    textos = { ...textos, indexar: !!indexar };
 
     const { error } = await sb.from("landings").upsert(
       { user_id: user.id, lead_id: leadId, textos, accent: "#c9974c", tema: "escuro" },

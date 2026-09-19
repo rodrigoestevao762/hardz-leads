@@ -37,6 +37,8 @@ export default function EditorLanding() {
   const [textos, setTextos] = useState<TextosLanding | null>(null);
   const [accent, setAccent] = useState("#c9974c");
   const [tema, setTema] = useState<"escuro" | "claro">("escuro");
+  const [modeloIA, setModeloIA] = useState("gemini-1.5-flash");
+  const [indexarSEO, setIndexarSEO] = useState(false);
   const [srcDoc, setSrcDoc] = useState("");
   const [estado, setEstado] = useState<"carregando" | "sem-landing" | "pronto">("carregando");
   const [ocupado, setOcupado] = useState<string | null>(null);
@@ -83,6 +85,7 @@ export default function EditorLanding() {
       setTextos(t);
       setAccent(a);
       setTema(tm);
+      setIndexarSEO(!!t.indexar);
       if (landing.publicada && landing.slug) {
         setPublicaUrl(`${window.location.origin}/s/${landing.slug}`);
       }
@@ -107,8 +110,6 @@ export default function EditorLanding() {
       if (!doc) return;
       doc.body.contentEditable = "true";
       doc.body.style.outline = "none";
-      // com contentEditable o foco fica no body (host de edição), então detectamos
-      // as edições pelo evento "input", que traz o elemento real em e.target
       doc.addEventListener("input", (e) => {
         const alvo = (e.target as HTMLElement | null)?.closest?.("[data-campo]") as HTMLElement | null;
         if (!alvo) return;
@@ -130,13 +131,14 @@ export default function EditorLanding() {
     if (!instrucao) return;
     setOcupado("gerar"); setAviso(null);
     const res = await fetch("/api/gerar-landing", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId, instrucaoCustomizada: instrucao }),
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId, instrucaoCustomizada: instrucao, modelo: modeloIA, indexar: indexarSEO }),
     });
     const json = await res.json();
     setOcupado(null);
     if (!res.ok) return setAviso("Erro: " + json.erro);
     const t = json.textos as TextosLanding;
     setTextos(t);
+    setIndexarSEO(!!t.indexar);
     if (dados) reconstruir(t, accent, tema, dados);
     setEstado("pronto");
   }
@@ -144,13 +146,14 @@ export default function EditorLanding() {
   async function gerar() {
     setOcupado("gerar"); setAviso(null);
     const res = await fetch("/api/gerar-landing", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId }),
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId, modelo: modeloIA, indexar: indexarSEO }),
     });
     const json = await res.json();
     setOcupado(null);
     if (!res.ok) return setAviso("Erro: " + json.erro);
     const t = json.textos as TextosLanding;
     setTextos(t);
+    setIndexarSEO(!!t.indexar);
     if (dados) reconstruir(t, accent, tema, dados);
     setEstado("pronto");
   }
@@ -276,6 +279,26 @@ export default function EditorLanding() {
           <option value="escuro">Tema escuro</option>
           <option value="claro">Tema claro</option>
         </select>
+
+        <select value={modeloIA} onChange={(e) => setModeloIA(e.target.value)}
+          className="field-premium mono rounded-lg px-2.5 py-1.5 text-[10px] outline-none border border-[var(--line)]">
+          <option value="gemini-1.5-flash">Gemini 1.5 Flash (Rápido)</option>
+          <option value="gemini-1.5-pro">Gemini 1.5 Pro (Criativo)</option>
+          <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash (Moderno)</option>
+        </select>
+
+        <label className="mono flex items-center gap-2 text-[10px] uppercase tracking-widest text-[var(--ink-dim)] bg-white/5 rounded-lg px-2 py-1.5 cursor-pointer">
+          <input type="checkbox" checked={indexarSEO} onChange={(e) => {
+            const v = e.target.checked;
+            setIndexarSEO(v);
+            if (textos && dados) {
+              const nt = { ...textos, indexar: v };
+              setTextos(nt);
+              reconstruir(nt, accent, tema, dados);
+            }
+          }} />
+          Indexar no Google (SEO)
+        </label>
 
         <span className="mono hidden text-[10px] uppercase tracking-widest text-[var(--ink-faint)] lg:inline ml-2">
           ▸ clique no texto do preview para reescrever

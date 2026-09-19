@@ -18,6 +18,7 @@ export type TextosLanding = {
   rodape: string;
   servicos: { titulo: string; desc: string; preco: string }[];
   bullets: { titulo: string; desc: string }[];
+  indexar?: boolean;
 };
 
 export type DadosLanding = {
@@ -94,6 +95,7 @@ export function buildLandingHTML(
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>${esc(d.nome)} | ${esc(d.categoriaLabel)} em ${esc(d.cidade)}</title>
+<meta name="robots" content="${t.indexar ? 'index, follow' : 'noindex'}">
 <meta name="description" content="${esc(d.nome)} — ${esc(d.categoriaLabel)} em ${esc(d.cidade)}. ${esc(t.sub.slice(0, 120))}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,700&family=Archivo:wght@300;400;500;600&display=swap" rel="stylesheet">

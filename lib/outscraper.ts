@@ -21,6 +21,11 @@ export async function buscarOutscraper(query: string, apiKey: string) {
   const results = data[0] || [];
   
   return results.map((e: any) => {
+    let fotoUrl = e.photo || null;
+    if (!fotoUrl && e.photos_data && e.photos_data.length > 0) {
+      fotoUrl = e.photos_data[0].photo_url || null;
+    }
+
     return {
       osmId: "out_" + e.place_id,
       nome: e.name || "Empresa Desconhecida",
@@ -33,6 +38,7 @@ export async function buscarOutscraper(query: string, apiKey: string) {
       instagram: e.verified_link || e.instagram || null,
       email: e.emails?.[0] || e.email || null,
       facebook: e.facebook || null,
+      foto: fotoUrl,
       fonte: "outscraper",
     };
   });
